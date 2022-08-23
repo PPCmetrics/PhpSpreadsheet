@@ -41,6 +41,8 @@ class NumberFormat extends Supervisor
     const FORMAT_DATE_TIME7 = 'i:s.S';
     const FORMAT_DATE_TIME8 = 'h:mm:ss;@';
     const FORMAT_DATE_YYYYMMDDSLASH = 'yyyy/mm/dd;@';
+    //PPCmetrics
+    const FORMAT_DATE_PPC = "dd.mm.yyyy";
 
     const FORMAT_CURRENCY_USD_SIMPLE = '"$"#,##0.00_-';
     const FORMAT_CURRENCY_USD = '$#,##0_-';

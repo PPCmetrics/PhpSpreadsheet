@@ -98,6 +98,7 @@ class ContentTypes extends WriterPart
         // Add worksheet relationship content types
         $unparsedLoadedData = $spreadsheet->getUnparsedLoadedData();
         $chart = 1;
+        $drawing = $sheetCount;
         for ($i = 0; $i < $sheetCount; ++$i) {
             $drawings = $spreadsheet->getSheet($i)->getDrawingCollection();
             $drawingCount = count($drawings);
@@ -111,7 +112,10 @@ class ContentTypes extends WriterPart
 
             //    If we have charts, then we need a chart relationship for every individual chart
             if ($chartCount > 0) {
-                for ($c = 0; $c < $chartCount; ++$c) {
+                foreach ($spreadsheet->getSheet($i)->getChartCollection() as $c) {
+                    foreach ($c->getUserShapes() as $userShape) {
+                        $this->writeOverrideContentType($objWriter, '/xl/drawings/drawing' . (++$drawing) . '.xml', 'application/vnd.openxmlformats-officedocument.drawingml.chartshapes+xml');
+                    }
                     $this->writeOverrideContentType($objWriter, '/xl/charts/chart' . $chart++ . '.xml', 'application/vnd.openxmlformats-officedocument.drawingml.chart+xml');
                 }
             }

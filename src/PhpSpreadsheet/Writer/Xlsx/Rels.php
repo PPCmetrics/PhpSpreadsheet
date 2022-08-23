@@ -130,12 +130,21 @@ class Rels extends WriterPart
         // Relationships with sheets
         $sheetCount = $spreadsheet->getSheetCount();
         for ($i = 0; $i < $sheetCount; ++$i) {
-            $this->writeRelationship(
-                $objWriter,
-                ($i + 1 + 3),
-                'http://schemas.openxmlformats.org/officeDocument/2006/relationships/worksheet',
-                'worksheets/sheet' . ($i + 1) . '.xml'
-            );
+            if ($spreadsheet->getSheet($i)->getChartSheet()) {
+                $this->writeRelationship(
+                    $objWriter,
+                    ($i + 1 + 3),
+                    'http://schemas.openxmlformats.org/officeDocument/2006/relationships/chartsheet',
+                    'chartsheets/sheet' . ($i + 1) . '.xml'
+                );
+            } else {
+                $this->writeRelationship(
+                    $objWriter,
+                    ($i + 1 + 3),
+                    'http://schemas.openxmlformats.org/officeDocument/2006/relationships/worksheet',
+                    'worksheets/sheet' . ($i + 1) . '.xml'
+                );
+            }
         }
         // Relationships for vbaProject if needed
         // id : just after the last sheet
@@ -299,6 +308,39 @@ class Rels extends WriterPart
                 $value['relFilePath']
             );
         }
+    }
+
+    public function writeUserShapeRelationships(\PhpOffice\PhpSpreadsheet\Chart\Chart $chart, &$drawingRef) {
+        // Create XML writer
+        $objWriter = null;
+        if ($this->getParentWriter()->getUseDiskCaching()) {
+            $objWriter = new XMLWriter(XMLWriter::STORAGE_DISK, $this->getParentWriter()->getDiskCachingDirectory());
+        } else {
+            $objWriter = new XMLWriter(XMLWriter::STORAGE_MEMORY);
+        }
+
+        // XML header
+        $objWriter->startDocument('1.0', 'UTF-8', 'yes');
+
+        // Relationships
+        $objWriter->startElement('Relationships');
+        $objWriter->writeAttribute('xmlns', 'http://schemas.openxmlformats.org/package/2006/relationships');
+
+        // Loop through images and write relationships
+        $i = 1;
+        $userShapeCount = $chart->getUserShapesCount();
+        if ($userShapeCount > 0) {
+            $this->writeRelationship(
+                $objWriter,
+                $i++,
+                'http://schemas.openxmlformats.org/officeDocument/2006/relationships/chartUserShapes',
+                '../drawings/drawing' . ++$drawingRef . '.xml'
+            );
+        }
+
+        $objWriter->endElement();
+
+        return $objWriter->getData();
     }
 
     /**

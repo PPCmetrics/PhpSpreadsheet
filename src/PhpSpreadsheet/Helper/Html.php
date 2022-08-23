@@ -618,7 +618,7 @@ class Html
         $dom = new DOMDocument();
         //    Load the HTML file into the DOM object
         //  Note the use of error suppression, because typically this will be an html fragment, so not fully valid markup
-        $prefix = '<?xml encoding="UTF-8">';
+        $prefix = '<?xml version="1.0" encoding="UTF-8"?>';
         /** @scrutinizer ignore-unhandled */
         @$dom->loadHTML($prefix . $html, LIBXML_HTML_NOIMPLIED | LIBXML_HTML_NODEFDTD);
         //    Discard excess white space
@@ -657,6 +657,7 @@ class Html
         $richtextRun = $this->richTextObject->createTextRun($this->stringData);
         if ($this->face) {
             $richtextRun->getFont()->setName($this->face);
+            $richtextRun->getFont()->setLatin($this->face);
         }
         if ($this->size) {
             $richtextRun->getFont()->setSize($this->size);
@@ -797,7 +798,7 @@ class Html
             ' ',
             str_replace(["\r", "\n"], ' ', $textNode->nodeValue ?? '')
         );
-        $this->stringData .= $domText;
+        $this->stringData .= $textNode->nodeValue??'';//PPCmetrics
         $this->buildTextRun();
     }
 

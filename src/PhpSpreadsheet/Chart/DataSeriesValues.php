@@ -93,6 +93,48 @@ class DataSeriesValues
     private $bubble3D = false;
 
     /**
+     * Bubble Size
+     * 
+     * @var array of mixed
+     */
+    private $dataBubbleSizes = [];
+
+    public function getDataBubbleSizes() {
+        return $this->dataBubbleSizes;
+    }
+
+    public function setDataBubbleSizes($dataBubbleSizes) {
+        $this->dataBubbleSizes = $dataBubbleSizes;
+        return $this;
+    }
+
+    /**
+     * Series Bubble Size Source.
+     *
+     * @var string
+     */
+    private $dataBubbleSource;
+
+    public function getDataBubbleSource() {
+        return $this->dataBubbleSource;
+    }
+
+    public function setDataBubbleSource($dataBubbleSource) {
+        $this->dataBubbleSource = $dataBubbleSource;
+        return $this;
+    }
+
+    private $dataLabels = [];
+    public function getDataLabels() {
+        return $this->dataLabels;
+    }
+
+    public function setDataLabels($dataLabels) {
+        $this->dataLabels = $dataLabels;
+        return $this;
+    }    
+
+    /**
      * Create a new DataSeriesValues object.
      *
      * @param string $dataType
@@ -296,7 +338,7 @@ class DataSeriesValues
      */
     private function validateColor($color)
     {
-        if (!preg_match('/^[a-f0-9]{6}$/i', $color)) {
+        if (!preg_match('/^[a-f0-9]{6,8}$/i', $color)) {
             throw new Exception(sprintf('Invalid hex color for chart series (color: "%s")', $color));
         }
 
@@ -439,6 +481,44 @@ class DataSeriesValues
                 }
             }
             $this->pointCount = count($this->dataValues);
+        }
+        if ($this->dataBubbleSource !== null) {
+            $calcEngine = Calculation::getInstance($worksheet->getParent());
+            $newDataBubbleSizes = Calculation::unwrapResult(
+                $calcEngine->_calculateFormulaValue(
+                    '=' . $this->dataBubbleSource,
+                    null,
+                    $worksheet->getCell('A1')
+                )
+            );
+            if ($flatten) {
+                $this->dataBubbleSizes = Functions::flattenArray($newDataBubbleSizes);
+                foreach ($this->dataBubbleSizes as &$dataValue) {
+                    if (is_string($dataValue) && !empty($dataValue) && $dataValue[0] == '#') {
+                        $dataValue = 0.0;
+                    }
+                }
+                unset($dataValue);
+            } else {
+                [$worksheet, $cellRange] = Worksheet::extractSheetTitle($this->dataBubbleSource, true);
+                $dimensions = Coordinate::rangeDimension(str_replace('$', '', $cellRange));
+                if (($dimensions[0] == 1) || ($dimensions[1] == 1)) {
+                    $this->dataBubbleSizes = Functions::flattenArray($newDataBubbleSizes);
+                } else {
+                    $newArray = array_values(array_shift($newDataBubbleSizes));
+                    foreach ($newArray as $i => $newDataSet) {
+                        $newArray[$i] = [$newDataSet];
+                    }
+
+                    foreach ($newDataBubbleSizes as $newDataSet) {
+                        $i = 0;
+                        foreach ($newDataSet as $newDataVal) {
+                            array_unshift($newArray[$i++], $newDataVal);
+                        }
+                    }
+                    $this->dataBubbleSizes = $newArray;
+                }
+            }
         }
     }
 

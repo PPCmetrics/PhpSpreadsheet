@@ -20,6 +20,17 @@ class PlotArea
      */
     private $plotSeries = [];
 
+    private $hasBorder = false;
+
+    public function getHasBorder() {
+        return $this->hasBorder;
+    }
+
+    public function setHasBorder($hasBorder) {
+        $this->hasBorder = $hasBorder;
+        return $this;
+    }
+
     /**
      * Create a new PlotArea.
      *

@@ -342,6 +342,8 @@ class Worksheet implements IComparable
      */
     private $codeName;
 
+    private $chartSheet;
+
     /**
      * Create a new worksheet.
      *
@@ -467,9 +469,16 @@ class Worksheet implements IComparable
      */
     private static function checkSheetTitle($sheetTitle)
     {
+        /*
         // Some of the printable ASCII characters are invalid:  * : / \ ? [ ]
         if (str_replace(self::$invalidCharacters, '', $sheetTitle) !== $sheetTitle) {
             throw new Exception('Invalid character found in sheet title');
+        }*/
+        // PPCmetrics
+        foreach(self::$invalidCharacters as $a) {
+            if (stripos($sheetTitle,$a) !== false) {
+                throw new Exception('Invalid character found in sheet title('.$sheetTitle.'): '.$a.' at Position: '.stripos($sheetTitle,$a).' .');
+            }
         }
 
         // Enforce maximum characters allowed for sheet title
@@ -649,6 +658,15 @@ class Worksheet implements IComparable
         }
 
         return false;
+    }
+
+    public function getChartSheet() {
+        return $this->chartSheet;
+    }
+
+    public function setChartSheet($chartSheet) {
+        $this->chartSheet = $chartSheet;
+        return $this;
     }
 
     /**

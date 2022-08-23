@@ -121,6 +121,19 @@ class Chart extends WriterPart
 
         $objWriter->endElement();
 
+        $objWriter->startElement('c:spPr');
+        $objWriter->startElement('a:ln');
+        $objWriter->startElement('a:noFill');
+        $objWriter->endElement();
+        $objWriter->endElement();
+        $objWriter->endElement();
+        $i=0;
+        if ($chart->getUserShapesCount()) {
+            $objWriter->startElement('c:userShapes');
+            $objWriter->writeAttribute('r:id', "rId".(++$i));
+            $objWriter->endElement();
+        }        
+
         $this->writePrintSettings($objWriter);
 
         $objWriter->endElement();
@@ -150,8 +163,12 @@ class Chart extends WriterPart
 
         $objWriter->startElement('a:p');
         $objWriter->startElement('a:pPr');
-        $objWriter->startElement('a:defRPr');
-        $objWriter->endElement();
+        if ($title->getOrientation() !== null) {
+            $objWriter->writeAttribute('algn', $title->getOrientation());
+        } else {
+            $objWriter->startElement('a:defRPr');
+            $objWriter->endElement();
+        }
         $objWriter->endElement();
 
         $caption = $title->getCaption();
@@ -264,7 +281,7 @@ class Chart extends WriterPart
                         $objWriter->endElement();
                     }
 
-                    $this->writePlotGroup($plotGroup, $chartType, $objWriter, $catIsMultiLevelSeries, $valIsMultiLevelSeries, $plotGroupingType);
+                    $this->writePlotGroup($plotGroup, $chartType, $objWriter, $catIsMultiLevelSeries, $valIsMultiLevelSeries, $plotGroupingType, $plotArea);
                 }
             }
 
@@ -349,7 +366,7 @@ class Chart extends WriterPart
 
         if (($chartType !== DataSeries::TYPE_PIECHART) && ($chartType !== DataSeries::TYPE_PIECHART_3D) && ($chartType !== DataSeries::TYPE_DONUTCHART)) {
             if ($chartType === DataSeries::TYPE_BUBBLECHART) {
-                $this->writeValueAxis($objWriter, $xAxisLabel, $chartType, $id2, $id1, $catIsMultiLevelSeries, $xAxis, $majorGridlines, $minorGridlines);
+                $this->writeValueAxis($objWriter, $xAxisLabel, $chartType, $id1, $id2, $catIsMultiLevelSeries, $xAxis, $majorGridlines, $minorGridlines, true);
             } else {
                 $this->writeCategoryAxis($objWriter, $xAxisLabel, $id1, $id2, $catIsMultiLevelSeries, $xAxis);
             }
@@ -359,7 +376,17 @@ class Chart extends WriterPart
                 $this->writeSerAxis($objWriter, $id2, $id3);
             }
         }
-
+        if ($plotArea->getHasBorder()) {//PPCmetrics
+            $objWriter->startElement('c:spPr');
+            $objWriter->startElement('a:ln');
+            $objWriter->startElement('a:solidFill');
+            $objWriter->startElement('a:srgbClr');
+            $objWriter->writeAttribute('val', "A0A0A0");
+            $objWriter->endElement();
+            $objWriter->endElement();
+            $objWriter->endElement();
+            $objWriter->endElement();
+        }
         $objWriter->endElement();
     }
 
@@ -369,7 +396,12 @@ class Chart extends WriterPart
     private function writeDataLabels(XMLWriter $objWriter, ?Layout $chartLayout = null): void
     {
         $objWriter->startElement('c:dLbls');
+        $this->writeDataLabelSettings($objWriter, $chartLayout);
+        $objWriter->endElement();
+    }
 
+    private function writeDataLabelSettings(XMLWriter $objWriter, ?Layout $chartLayout = null): void
+    {
         $objWriter->startElement('c:showLegendKey');
         $showLegendKey = (empty($chartLayout)) ? 0 : $chartLayout->getShowLegendKey();
         $objWriter->writeAttribute('val', ((empty($showLegendKey)) ? 0 : 1));
@@ -403,8 +435,6 @@ class Chart extends WriterPart
         $objWriter->startElement('c:showLeaderLines');
         $showLeaderLines = (empty($chartLayout)) ? 1 : $chartLayout->getShowLeaderLines();
         $objWriter->writeAttribute('val', ((empty($showLeaderLines)) ? 0 : 1));
-        $objWriter->endElement();
-
         $objWriter->endElement();
     }
 
@@ -579,13 +609,13 @@ class Chart extends WriterPart
      * @param string $id2
      * @param bool $isMultiLevelSeries
      */
-    private function writeValueAxis(XMLWriter $objWriter, ?Title $yAxisLabel, $groupType, $id1, $id2, $isMultiLevelSeries, Axis $xAxis, GridLines $majorGridlines, GridLines $minorGridlines): void
+    private function writeValueAxis(XMLWriter $objWriter, ?Title $yAxisLabel, $groupType, $id1, $id2, $isMultiLevelSeries, Axis $xAxis, GridLines $majorGridlines, GridLines $minorGridlines, bool $reverse = false): void
     {
         $objWriter->startElement('c:valAx');
 
-        if ($id2 !== '0') {
+        if (($reverse ? $id1 : $id2) > 0) {
             $objWriter->startElement('c:axId');
-            $objWriter->writeAttribute('val', $id2);
+            $objWriter->writeAttribute('val', ($reverse ? $id1 : $id2));
             $objWriter->endElement();
         }
 
@@ -616,7 +646,11 @@ class Chart extends WriterPart
         $objWriter->endElement();
 
         $objWriter->startElement('c:axPos');
-        $objWriter->writeAttribute('val', 'l');
+        if ($reverse) {
+            $objWriter->writeAttribute('val', 'b');
+        } else {
+            $objWriter->writeAttribute('val', 'l');
+        }
         $objWriter->endElement();
 
         $objWriter->startElement('c:majorGridlines');
@@ -725,9 +759,38 @@ class Chart extends WriterPart
 
         $objWriter->endElement(); //end spPr
 
-        if ($id1 !== '0') {
+        if ($xAxis->getFontBold() || $xAxis->getFontFamily() || $xAxis->getFontSize()) {
+            $objWriter->startElement('c:txPr');
+            $objWriter->startElement('a:bodyPr');
+            $objWriter->endElement();
+            $objWriter->startElement('a:lstStyle');
+            $objWriter->endElement();
+            $objWriter->startElement('a:p');
+            $objWriter->startElement('a:pPr');
+            $objWriter->startElement('a:defRPr');
+            if ($xAxis->getFontSize()) {
+                $objWriter->writeAttribute('sz', $xAxis->getFontSize());
+            }
+            if ($xAxis->getFontBold()) {
+                $objWriter->writeAttribute('b', 1);
+            }
+            if ($xAxis->getFontFamily()) {
+                $objWriter->startElement('a:latin');
+                $objWriter->writeAttribute('typeface', $xAxis->getFontFamily());
+                $objWriter->endElement();
+                $objWriter->startElement('a:cs');
+                $objWriter->writeAttribute('typeface', $xAxis->getFontFamily());
+                $objWriter->endElement();
+            }
+            $objWriter->endElement();
+            $objWriter->endElement();
+            $objWriter->endElement();
+            $objWriter->endElement();
+        }
+
+        if (($reverse ? $id2 : $id1) > 0) {
             $objWriter->startElement('c:crossAx');
-            $objWriter->writeAttribute('val', $id1);
+            $objWriter->writeAttribute('val', ($reverse ? $id2 : $id1));
             $objWriter->endElement();
 
             if ($xAxis->getAxisOptionsProperty('horizontal_crosses_value') !== null) {
@@ -892,8 +955,9 @@ class Chart extends WriterPart
      * @param bool $catIsMultiLevelSeries Is category a multi-series category
      * @param bool $valIsMultiLevelSeries Is value set a multi-series set
      * @param string $plotGroupingType Type of grouping for multi-series values
+     * @param PlotArea $plotArea
      */
-    private function writePlotGroup(?DataSeries $plotGroup, string $groupType, XMLWriter $objWriter, &$catIsMultiLevelSeries, &$valIsMultiLevelSeries, &$plotGroupingType): void
+    private function writePlotGroup(?DataSeries $plotGroup, string $groupType, XMLWriter $objWriter, &$catIsMultiLevelSeries, &$valIsMultiLevelSeries, &$plotGroupingType, $plotArea): void
     {
         if ($plotGroup === null) {
             return;
@@ -917,7 +981,7 @@ class Chart extends WriterPart
         $plotSeriesCount = count($plotSeriesOrder);
 
         if (($groupType !== DataSeries::TYPE_RADARCHART) && ($groupType !== DataSeries::TYPE_STOCKCHART)) {
-            if ($groupType !== DataSeries::TYPE_LINECHART) {
+            if ($groupType !== DataSeries::TYPE_LINECHART &&  $groupType !== DataSeries::TYPE_BUBBLECHART) {
                 if (($groupType == DataSeries::TYPE_PIECHART) || ($groupType == DataSeries::TYPE_PIECHART_3D) || ($groupType == DataSeries::TYPE_DONUTCHART) || ($plotSeriesCount > 1)) {
                     $objWriter->startElement('c:varyColors');
                     $objWriter->writeAttribute('val', 1);
@@ -978,6 +1042,24 @@ class Chart extends WriterPart
                 $this->writePlotSeriesLabel($plotSeriesLabel, $objWriter);
                 $objWriter->endElement();
                 $objWriter->endElement();
+            }
+
+            if ($groupType == DataSeries::TYPE_BUBBLECHART) {
+                $fillColorValues = $plotSeriesValues->getFillColor();
+                if ($fillColorValues !== null) {
+                    $objWriter->startElement('c:spPr');
+                    $objWriter->startElement('a:solidFill');
+                    $objWriter->startElement('a:srgbClr');
+                    $objWriter->writeAttribute('val', substr($fillColorValues,-6));
+                    if (strlen($fillColorValues)==8) {
+                        $objWriter->startElement('a:alpha');
+                        $objWriter->writeAttribute('val', intval(100000*(hexdec(substr($fillColorValues,0,2))/255.0)));
+                        $objWriter->endElement();
+                    }
+                    $objWriter->endElement();
+                    $objWriter->endElement();
+                    $objWriter->endElement();
+                }
             }
 
             //    Formatting for the points
@@ -1062,6 +1144,56 @@ class Chart extends WriterPart
             if (($groupType === DataSeries::TYPE_BARCHART) || ($groupType === DataSeries::TYPE_BARCHART_3D) || ($groupType === DataSeries::TYPE_BUBBLECHART)) {
                 $objWriter->startElement('c:invertIfNegative');
                 $objWriter->writeAttribute('val', 0);
+                $objWriter->endElement();
+            }
+
+            if ($plotSeriesValues && $groupType === DataSeries::TYPE_BUBBLECHART) { //PPCmetrics
+                $objWriter->startElement('c:dLbls');
+                $idx = 0;
+                foreach ($plotSeriesValues->getDataLabels() as $dlbl) {
+                    $objWriter->startElement('c:dLbl');
+                    $objWriter->startElement('c:idx');
+                    $objWriter->writeAttribute('val', $idx);
+                    $objWriter->endElement();
+                    $objWriter->startElement('c:layout');
+                    $objWriter->startElement('c:manualLayout');
+                    $objWriter->startElement('c:x');
+                    $objWriter->writeAttribute('val', $dlbl[0]);
+                    $objWriter->endElement();
+                    $objWriter->startElement('c:y');
+                    $objWriter->writeAttribute('val', $dlbl[1]);
+                    $objWriter->endElement();
+                    $objWriter->endElement();
+                    $objWriter->endElement();
+                    $objWriter->startElement('c:dLblPos');
+                    $objWriter->writeAttribute('val', 'ctr');
+                    $objWriter->endElement();
+                    $this->writeDataLabelSettings($objWriter, $plotArea->getLayout());
+                    $objWriter->endElement();
+                    $idx++;
+                }
+                if (($dlbl[2]??null)) {
+                    $objWriter->startElement('c:txPr');
+                    $objWriter->startElement('a:bodyPr');
+                    $objWriter->writeAttribute('wrap', 'square');
+                    $objWriter->writeAttribute('lIns', '38100');
+                    $objWriter->writeAttribute('tIns', '19050');
+                    $objWriter->writeAttribute('rIns', '38100');
+                    $objWriter->writeAttribute('bIns', '19050');
+                    $objWriter->writeAttribute('anchor', 'ctr');
+                    $objWriter->writeElement('a:spAutoFit');
+                    $objWriter->endElement();
+                    $objWriter->writeElement('a:lstStyle');
+                    $objWriter->startElement('a:p');
+                    $objWriter->startElement('a:pPr');
+                    $objWriter->startElement('a:defRPr');
+                    $objWriter->writeAttribute('b', '1');
+                    $objWriter->endElement();
+                    $objWriter->writeElement('a:endParaRPr');
+                    $objWriter->endElement();
+                    $objWriter->endElement();
+                    $objWriter->endElement();
+                }
                 $objWriter->endElement();
             }
 
@@ -1278,7 +1410,13 @@ class Chart extends WriterPart
         }
 
         $objWriter->startElement('c:bubbleSize');
-        $objWriter->startElement('c:numLit');
+        $objWriter->startElement('c:numRef');
+
+        $objWriter->startElement('c:f');
+        $objWriter->writeRawData($plotSeriesValues->getDataBubbleSource());
+        $objWriter->endElement();
+
+        $objWriter->startElement('c:numCache');
 
         $objWriter->startElement('c:formatCode');
         $objWriter->writeRawData('General');
@@ -1288,19 +1426,21 @@ class Chart extends WriterPart
         $objWriter->writeAttribute('val', $plotSeriesValues->getPointCount());
         $objWriter->endElement();
 
-        $dataValues = $plotSeriesValues->getDataValues();
-        if (!empty($dataValues)) {
-            if (is_array($dataValues)) {
-                foreach ($dataValues as $plotSeriesKey => $plotSeriesValue) {
+        $dataBubbleSizes = $plotSeriesValues->getDataBubbleSizes();
+        if (!empty($dataBubbleSizes)) {
+            if (is_array($dataBubbleSizes)) {
+                foreach ($dataBubbleSizes as $plotSeriesKey => $plotSeriesBubbleSize) {
                     $objWriter->startElement('c:pt');
                     $objWriter->writeAttribute('idx', $plotSeriesKey);
                     $objWriter->startElement('c:v');
-                    $objWriter->writeRawData(1);
+                    $objWriter->writeRawData($plotSeriesBubbleSize);
                     $objWriter->endElement();
                     $objWriter->endElement();
                 }
             }
         }
+
+        $objWriter->endElement();
 
         $objWriter->endElement();
         $objWriter->endElement();

@@ -88,7 +88,7 @@ class Workbook extends WriterPart
             $objWriter->writeAttribute('date1904', '1');
         }
 
-        $objWriter->writeAttribute('codeName', 'ThisWorkbook');
+        $objWriter->writeAttribute('codeName', 'DieseArbeitsmappe');//PPCmetrics German Templates with Macros in them won't Work properly otherwise
 
         $objWriter->endElement();
     }

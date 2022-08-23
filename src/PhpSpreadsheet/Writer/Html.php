@@ -1057,6 +1057,19 @@ class Html extends BaseWriter
         $css['border-left'] = $this->createCSSStyleBorder($borders->getLeft());
         $css['border-right'] = $this->createCSSStyleBorder($borders->getRight());
 
+        if ($css['border-bottom'] == '') {
+            unset($css['border-bottom']);
+        }
+        if ($css['border-top'] == '') { 
+            unset($css['border-top']);
+        }
+        if ($css['border-left'] == '') { 
+            unset($css['border-left']);
+        }
+        if ($css['border-right'] == '') { 
+            unset($css['border-right']);
+        }
+
         return $css;
     }
 
@@ -1071,6 +1084,10 @@ class Html extends BaseWriter
     {
         //    Create CSS - add !important to non-none border styles for merged cells
         $borderStyle = $this->mapBorderStyle($border->getBorderStyle());
+
+        if ($borderStyle == 'none') {
+            return '';
+        }
 
         return $borderStyle . ' #' . $border->getColor()->getRGB() . (($borderStyle == 'none') ? '' : ' !important');
     }
@@ -1813,6 +1830,8 @@ class Html extends BaseWriter
 
         // Loop all sheets
         $sheetId = 0;
+        //PPCmetrics
+        /*
         foreach ($sheets as $worksheet) {
             $htmlPage .= "@page page$sheetId { ";
             $left = StringHelper::formatNumber($worksheet->getPageMargins()->getLeft()) . 'in; ';
@@ -1831,19 +1850,21 @@ class Html extends BaseWriter
             }
             $htmlPage .= "}\n";
             ++$sheetId;
-        }
+        }*/
         $htmlPage .= <<<EOF
 .navigation {page-break-after: always;}
 .scrpgbrk, div + div {page-break-before: always;}
 @media screen {
-  .gridlines td {border: 1px solid black;}
+  /*PPCmetrics
+  .gridlines td {border: 1px solid black;}*/
   .gridlines th {border: 1px solid black;}
   body>div {margin-top: 5px;}
   body>div:first-child {margin-top: 0;}
   .scrpgbrk {margin-top: 1px;}
 }
 @media print {
-  .gridlinesp td {border: 1px solid black;}
+  /*PPCmetrics
+  .gridlinesp td {border: 1px solid black;}*/
   .gridlinesp th {border: 1px solid black;}
   .navigation {display: none;}
 }
