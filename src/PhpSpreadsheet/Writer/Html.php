@@ -1863,7 +1863,7 @@ class Html extends BaseWriter
             }
             $htmlPage .= '}' . PHP_EOL;
             ++$sheetId;
-        }
+        }*/
         $htmlPage .= implode(PHP_EOL, [
             '.navigation {page-break-after: always;}',
             '.scrpgbrk, div + div {page-break-before: always;}',
