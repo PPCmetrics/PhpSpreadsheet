@@ -17,42 +17,42 @@ class Chart
     /**
      * Worksheet.
      *
-     * @var Worksheet
+     * @var ?Worksheet
      */
     private $worksheet;
 
     /**
      * Chart Title.
      *
-     * @var Title
+     * @var ?Title
      */
     private $title;
 
     /**
      * Chart Legend.
      *
-     * @var Legend
+     * @var ?Legend
      */
     private $legend;
 
     /**
      * X-Axis Label.
      *
-     * @var Title
+     * @var ?Title
      */
     private $xAxisLabel;
 
     /**
      * Y-Axis Label.
      *
-     * @var Title
+     * @var ?Title
      */
     private $yAxisLabel;
 
     /**
      * Chart Plot Area.
      *
-     * @var PlotArea
+     * @var ?PlotArea
      */
     private $plotArea;
 
@@ -83,20 +83,6 @@ class Chart
      * @var Axis
      */
     private $xAxis;
-
-    /**
-     * Chart Major Gridlines as.
-     *
-     * @var GridLines
-     */
-    private $majorGridlines;
-
-    /**
-     * Chart Minor Gridlines as.
-     *
-     * @var GridLines
-     */
-    private $minorGridlines;
 
     /**
      * Top-Left Cell Position.
@@ -155,10 +141,20 @@ class Chart
     /** @var bool */
     private $oneCellAnchor = false;
 
+    /** @var bool */
+    private $autoTitleDeleted = false;
+
+    /** @var bool */
+    private $noFill = false;
+
+    /** @var bool */
+    private $roundedCorners = false;
+
     private $userShapes = [];
 
     /**
      * Create a new Chart.
+     * majorGridlines and minorGridlines are deprecated, moved to Axis.
      *
      * @param mixed $name
      * @param mixed $plotVisibleOnly
@@ -174,10 +170,14 @@ class Chart
         $this->plotArea = $plotArea;
         $this->plotVisibleOnly = $plotVisibleOnly;
         $this->displayBlanksAs = $displayBlanksAs;
-        $this->xAxis = $xAxis;
-        $this->yAxis = $yAxis;
-        $this->majorGridlines = $majorGridlines;
-        $this->minorGridlines = $minorGridlines;
+        $this->xAxis = $xAxis ?? new Axis();
+        $this->yAxis = $yAxis ?? new Axis();
+        if ($majorGridlines !== null) {
+            $this->yAxis->setMajorGridlines($majorGridlines);
+        }
+        if ($minorGridlines !== null) {
+            $this->yAxis->setMinorGridlines($minorGridlines);
+        }
     }
 
     /**
@@ -190,12 +190,17 @@ class Chart
         return $this->name;
     }
 
+    public function setName(string $name): self
+    {
+        $this->name = $name;
+
+        return $this;
+    }
+
     /**
      * Get Worksheet.
-     *
-     * @return Worksheet
      */
-    public function getWorksheet()
+    public function getWorksheet(): ?Worksheet
     {
         return $this->worksheet;
     }
@@ -212,12 +217,7 @@ class Chart
         return $this;
     }
 
-    /**
-     * Get Title.
-     *
-     * @return Title
-     */
-    public function getTitle()
+    public function getTitle(): ?Title
     {
         return $this->title;
     }
@@ -234,12 +234,7 @@ class Chart
         return $this;
     }
 
-    /**
-     * Get Legend.
-     *
-     * @return Legend
-     */
-    public function getLegend()
+    public function getLegend(): ?Legend
     {
         return $this->legend;
     }
@@ -256,12 +251,7 @@ class Chart
         return $this;
     }
 
-    /**
-     * Get X-Axis Label.
-     *
-     * @return Title
-     */
-    public function getXAxisLabel()
+    public function getXAxisLabel(): ?Title
     {
         return $this->xAxisLabel;
     }
@@ -278,12 +268,7 @@ class Chart
         return $this;
     }
 
-    /**
-     * Get Y-Axis Label.
-     *
-     * @return Title
-     */
-    public function getYAxisLabel()
+    public function getYAxisLabel(): ?Title
     {
         return $this->yAxisLabel;
     }
@@ -300,14 +285,19 @@ class Chart
         return $this;
     }
 
-    /**
-     * Get Plot Area.
-     *
-     * @return PlotArea
-     */
-    public function getPlotArea()
+    public function getPlotArea(): ?PlotArea
     {
         return $this->plotArea;
+    }
+
+    /**
+     * Set Plot Area.
+     */
+    public function setPlotArea(PlotArea $plotArea): self
+    {
+        $this->plotArea = $plotArea;
+
+        return $this;
     }
 
     /**
@@ -358,62 +348,58 @@ class Chart
         return $this;
     }
 
-    /**
-     * Get yAxis.
-     *
-     * @return Axis
-     */
-    public function getChartAxisY()
+    public function getChartAxisY(): Axis
     {
-        if ($this->yAxis !== null) {
-            return $this->yAxis;
-        }
-        $this->yAxis = new Axis();
-
         return $this->yAxis;
     }
 
     /**
-     * Get xAxis.
-     *
-     * @return Axis
+     * Set yAxis.
      */
-    public function getChartAxisX()
+    public function setChartAxisY(?Axis $axis): self
     {
-        if ($this->xAxis !== null) {
-            return $this->xAxis;
-        }
-        $this->xAxis = new Axis();
+        $this->yAxis = $axis ?? new Axis();
 
+        return $this;
+    }
+
+    public function getChartAxisX(): Axis
+    {
         return $this->xAxis;
+    }
+
+    /**
+     * Set xAxis.
+     */
+    public function setChartAxisX(?Axis $axis): self
+    {
+        $this->xAxis = $axis ?? new Axis();
+
+        return $this;
     }
 
     /**
      * Get Major Gridlines.
      *
-     * @return GridLines
+     * @Deprecated 1.24.0 Use Axis->getMajorGridlines
+     *
+     * @codeCoverageIgnore
      */
-    public function getMajorGridlines()
+    public function getMajorGridlines(): ?GridLines
     {
-        if ($this->majorGridlines !== null) {
-            return $this->majorGridlines;
-        }
-
-        return new GridLines();
+        return $this->yAxis->getMajorGridLines();
     }
 
     /**
      * Get Minor Gridlines.
      *
-     * @return GridLines
+     * @Deprecated 1.24.0 Use Axis->getMinorGridlines
+     *
+     * @codeCoverageIgnore
      */
-    public function getMinorGridlines()
+    public function getMinorGridlines(): ?GridLines
     {
-        if ($this->minorGridlines !== null) {
-            return $this->minorGridlines;
-        }
-
-        return new GridLines();
+        return $this->yAxis->getMinorGridLines();
     }
 
     /**
@@ -681,7 +667,7 @@ class Chart
 
     public function refresh(): void
     {
-        if ($this->worksheet !== null) {
+        if ($this->worksheet !== null && $this->plotArea !== null) {
             $this->plotArea->refresh($this->worksheet);
         }
     }
@@ -709,7 +695,7 @@ class Chart
 
         $renderer = new $libraryName($this);
 
-        return $renderer->render($outputDestination);
+        return $renderer->render($outputDestination); // @phpstan-ignore-line
     }
 
     public function getRotX(): ?int
@@ -768,6 +754,42 @@ class Chart
     public function setOneCellAnchor(bool $oneCellAnchor): self
     {
         $this->oneCellAnchor = $oneCellAnchor;
+
+        return $this;
+    }
+
+    public function getAutoTitleDeleted(): bool
+    {
+        return $this->autoTitleDeleted;
+    }
+
+    public function setAutoTitleDeleted(bool $autoTitleDeleted): self
+    {
+        $this->autoTitleDeleted = $autoTitleDeleted;
+
+        return $this;
+    }
+
+    public function getNoFill(): bool
+    {
+        return $this->noFill;
+    }
+
+    public function setNoFill(bool $noFill): self
+    {
+        $this->noFill = $noFill;
+
+        return $this;
+    }
+
+    public function getRoundedCorners(): bool
+    {
+        return $this->roundedCorners;
+    }
+
+    public function setRoundedCorners(bool $roundedCorners): self
+    {
+        $this->roundedCorners = $roundedCorners;
 
         return $this;
     }
