@@ -1145,7 +1145,7 @@ class Chart extends WriterPart
             }
 
             //    Formatting for the points
-            if (
+            /*if (
                 $plotSeriesValues !== false
             ) {
                 $objWriter->startElement('c:spPr');
@@ -1167,7 +1167,7 @@ class Chart extends WriterPart
                     $this->writeEffects($objWriter, $plotSeriesValues);
                 }
                 $objWriter->endElement(); // c:spPr
-            }
+            }*/ //PPCmetrics
 
             if ($plotSeriesValues) {
                 $plotSeriesMarker = $plotSeriesValues->getPointMarker();
