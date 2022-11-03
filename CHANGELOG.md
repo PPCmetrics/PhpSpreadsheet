@@ -9,15 +9,75 @@ and this project adheres to [Semantic Versioning](https://semver.org).
 
 ### Added
 
-- Implementation of the new `TEXTBEFORE()`, `TEXTAFTER()` and `TEXTSPLIT()` Excel Functions
-- Implementation of the `ARRAYTOTEXT()` Excel Function
-- Support for [mitoteam/jpgraph](https://packagist.org/packages/mitoteam/jpgraph) implementation of
-  JpGraph library to render charts added.
-- Charts: Add Gradients, Transparency, Hidden Axes, Rounded Corners, Trendlines.
+- Xlsx Reader support for Pivot Tables [PR #2829](https://github.com/PHPOffice/PhpSpreadsheet/pull/2829)
 
 ### Changed
 
 - Nothing
+
+### Deprecated
+
+- Direct update of Calculation::suppressFormulaErrors is replaced with setter.
+- Font public static variable defaultColumnWidths replaced with constant DEFAULT_COLUMN_WIDTHS.
+- ExcelError public static variable errorCodes replaced with constant ERROR_CODES.
+- NumberFormat constant FORMAT_DATE_YYYYMMDD2 replaced with existing identical FORMAT_DATE_YYYYMMDD.
+
+### Removed
+
+- Nothing
+
+### Fixed
+
+- Xlsx Reader Accept Palette of Fewer than 64 Colors [Issue #3093](https://github.com/PHPOffice/PhpSpreadsheet/issues/3093) [PR #3096](https://github.com/PHPOffice/PhpSpreadsheet/pull/3096)
+- Use Locale-Independent Float Conversion for Xlsx Writer Custom Property [Issue #3095](https://github.com/PHPOffice/PhpSpreadsheet/issues/3095) [PR #3099](https://github.com/PHPOffice/PhpSpreadsheet/pull/3099)
+- Allow setting AutoFilter range on a single cell or row [Issue #3102](https://github.com/PHPOffice/PhpSpreadsheet/issues/3102) [PR #3111](https://github.com/PHPOffice/PhpSpreadsheet/pull/3111)
+- Xlsx Reader External Data Validations Flag Missing [Issue #2677](https://github.com/PHPOffice/PhpSpreadsheet/issues/2677) [PR #3078](https://github.com/PHPOffice/PhpSpreadsheet/pull/3078)
+- Reduces extra memory usage on `__destruct()` calls [PR #3092](https://github.com/PHPOffice/PhpSpreadsheet/pull/3092)
+- Additional properties for Trendlines [Issue #3011](https://github.com/PHPOffice/PhpSpreadsheet/issues/3011) [PR #3028](https://github.com/PHPOffice/PhpSpreadsheet/pull/3028)
+- Calculation suppressFormulaErrors fix [Issue #1531](https://github.com/PHPOffice/PhpSpreadsheet/issues/1531) [PR #3092](https://github.com/PHPOffice/PhpSpreadsheet/pull/3092)
+- Permit Date/Time Entered on Spreadsheet to be Calculated as Float [Issue #1416](https://github.com/PHPOffice/PhpSpreadsheet/issues/1416) [PR #3121](https://github.com/PHPOffice/PhpSpreadsheet/pull/3121)
+
+
+## 1.25.2 - 2022-09-25
+
+### Added
+
+- Nothing
+
+### Changed
+
+- Nothing
+
+### Deprecated
+
+- Nothing
+
+### Removed
+
+- Nothing
+
+### Fixed
+
+- Composer dependency clash with ezyang/htmlpurifier
+
+
+## 1.25.0 - 2022-09-25
+
+### Added
+
+- Implementation of the new `TEXTBEFORE()`, `TEXTAFTER()` and `TEXTSPLIT()` Excel Functions
+- Implementation of the `ARRAYTOTEXT()` and `VALUETOTEXT()` Excel Functions
+- Support for [mitoteam/jpgraph](https://packagist.org/packages/mitoteam/jpgraph) implementation of
+  JpGraph library to render charts added.
+- Charts: Add Gradients, Transparency, Hidden Axes, Rounded Corners, Trendlines, Date Axes.
+
+### Changed
+
+- Allow variant behaviour when merging cells [Issue #3065](https://github.com/PHPOffice/PhpSpreadsheet/issues/3065)
+  - Merge methods now allow an additional `$behaviour` argument. Permitted values are:
+    - Worksheet::MERGE_CELL_CONTENT_EMPTY - Empty the content of the hidden cells (the default behaviour)
+    - Worksheet::MERGE_CELL_CONTENT_HIDE - Keep the content of the hidden cells
+    - Worksheet::MERGE_CELL_CONTENT_MERGE - Move the content of the hidden cells into the first cell
 
 ### Deprecated
 
@@ -34,6 +94,8 @@ and this project adheres to [Semantic Versioning](https://semver.org).
 
 ### Fixed
 
+- Fix update to defined names when inserting/deleting rows/columns [Issue #3076](https://github.com/PHPOffice/PhpSpreadsheet/issues/3076) [PR #3077](https://github.com/PHPOffice/PhpSpreadsheet/pull/3077) 
+- Fix DataValidation sqRef when inserting/deleting rows/columns [Issue #3056](https://github.com/PHPOffice/PhpSpreadsheet/issues/3056) [PR #3074](https://github.com/PHPOffice/PhpSpreadsheet/pull/3074)
 - Named ranges not usable as anchors in OFFSET function [Issue #3013](https://github.com/PHPOffice/PhpSpreadsheet/issues/3013)
 - Fully flatten an array [Issue #2955](https://github.com/PHPOffice/PhpSpreadsheet/issues/2955) [PR #2956](https://github.com/PHPOffice/PhpSpreadsheet/pull/2956)
 - cellExists() and getCell() methods should support UTF-8 named cells [Issue #2987](https://github.com/PHPOffice/PhpSpreadsheet/issues/2987) [PR #2988](https://github.com/PHPOffice/PhpSpreadsheet/pull/2988)
@@ -45,6 +107,11 @@ and this project adheres to [Semantic Versioning](https://semver.org).
 - Add setName Method for Chart [Issue #2991](https://github.com/PHPOffice/PhpSpreadsheet/issues/2991) [PR #3001](https://github.com/PHPOffice/PhpSpreadsheet/pull/3001)
 - Eliminate partial dependency on php-intl in StringHelper [Issue #2982](https://github.com/PHPOffice/PhpSpreadsheet/issues/2982) [PR #2994](https://github.com/PHPOffice/PhpSpreadsheet/pull/2994)
 - Minor changes for Pdf [Issue #2999](https://github.com/PHPOffice/PhpSpreadsheet/issues/2999) [PR #3002](https://github.com/PHPOffice/PhpSpreadsheet/pull/3002) [PR #3006](https://github.com/PHPOffice/PhpSpreadsheet/pull/3006)
+- Html/Pdf Do net set background color for cells using (default) nofill [PR #3016](https://github.com/PHPOffice/PhpSpreadsheet/pull/3016)
+- Add support for Date Axis to Chart [Issue #2967](https://github.com/PHPOffice/PhpSpreadsheet/issues/2967) [PR #3018](https://github.com/PHPOffice/PhpSpreadsheet/pull/3018)
+- Reconcile Differences Between Css and Excel for Cell Alignment [PR #3048](https://github.com/PHPOffice/PhpSpreadsheet/pull/3048)
+- R1C1 Format Internationalization and Better Support for Relative Offsets [Issue #1704](https://github.com/PHPOffice/PhpSpreadsheet/issues/1704) [PR #3052](https://github.com/PHPOffice/PhpSpreadsheet/pull/3052)
+- Minor Fix for Percentage Formatting [Issue #1929](https://github.com/PHPOffice/PhpSpreadsheet/issues/1929) [PR #3053](https://github.com/PHPOffice/PhpSpreadsheet/pull/3053)
 
 ## 1.24.1 - 2022-07-18
 

@@ -12,6 +12,7 @@ use PhpOffice\PhpSpreadsheet\Chart\PlotArea;
 use PhpOffice\PhpSpreadsheet\Chart\Properties;
 use PhpOffice\PhpSpreadsheet\Chart\Title;
 use PhpOffice\PhpSpreadsheet\Chart\TrendLine;
+use PhpOffice\PhpSpreadsheet\Reader\Xlsx\Namespaces;
 use PhpOffice\PhpSpreadsheet\Shared\XMLWriter;
 use PhpOffice\PhpSpreadsheet\Writer\Exception as WriterException;
 
@@ -48,9 +49,9 @@ class Chart extends WriterPart
 
         // c:chartSpace
         $objWriter->startElement('c:chartSpace');
-        $objWriter->writeAttribute('xmlns:c', 'http://schemas.openxmlformats.org/drawingml/2006/chart');
-        $objWriter->writeAttribute('xmlns:a', 'http://schemas.openxmlformats.org/drawingml/2006/main');
-        $objWriter->writeAttribute('xmlns:r', 'http://schemas.openxmlformats.org/officeDocument/2006/relationships');
+        $objWriter->writeAttribute('xmlns:c', Namespaces::CHART);
+        $objWriter->writeAttribute('xmlns:a', Namespaces::DRAWINGML);
+        $objWriter->writeAttribute('xmlns:r', Namespaces::SCHEMA_OFFICE_DOCUMENT);
 
         $objWriter->startElement('c:date1904');
         $objWriter->writeAttribute('val', '0');
@@ -250,8 +251,6 @@ class Chart extends WriterPart
         if ($plotArea === null) {
             return;
         }
-        $majorGridlines = ($yAxis === null) ? null : $yAxis->getMajorGridlines();
-        $minorGridlines = ($yAxis === null) ? null : $yAxis->getMinorGridlines();
 
         $id1 = $id2 = $id3 = '0';
         $this->seriesIndex = 0;
@@ -520,13 +519,14 @@ class Chart extends WriterPart
     private function writeCategoryAxis(XMLWriter $objWriter, ?Title $xAxisLabel, $id1, $id2, $isMultiLevelSeries, Axis $yAxis): void
     {
         // N.B. writeCategoryAxis may be invoked with the last parameter($yAxis) using $xAxis for ScatterChart, etc
-        // In that case, xAxis is NOT a category.
-        if ($yAxis->getAxisType() !== '') {
-            $objWriter->startElement('c:' . $yAxis->getAxisType());
+        // In that case, xAxis may contain values like the yAxis, or it may be a date axis (LINECHART).
+        $axisType = $yAxis->getAxisType();
+        if ($axisType !== '') {
+            $objWriter->startElement("c:$axisType");
         } elseif ($yAxis->getAxisIsNumericFormat()) {
-            $objWriter->startElement('c:valAx');
+            $objWriter->startElement('c:' . Axis::AXIS_TYPE_VALUE);
         } else {
-            $objWriter->startElement('c:catAx');
+            $objWriter->startElement('c:' . Axis::AXIS_TYPE_CATEGORY);
         }
         $majorGridlines = $yAxis->getMajorGridlines();
         $minorGridlines = $yAxis->getMinorGridlines();
@@ -684,7 +684,8 @@ class Chart extends WriterPart
         }
 
         $objWriter->startElement('c:auto');
-        $objWriter->writeAttribute('val', '1');
+        // LineChart with dateAx wants '0'
+        $objWriter->writeAttribute('val', ($axisType === Axis::AXIS_TYPE_DATE) ? '0' : '1');
         $objWriter->endElement();
 
         $objWriter->startElement('c:lblAlgn');
@@ -694,6 +695,30 @@ class Chart extends WriterPart
         $objWriter->startElement('c:lblOffset');
         $objWriter->writeAttribute('val', '100');
         $objWriter->endElement();
+
+        if ($axisType === Axis::AXIS_TYPE_DATE) {
+            $property = 'baseTimeUnit';
+            $propertyVal = $yAxis->getAxisOptionsProperty($property);
+            if (!empty($propertyVal)) {
+                $objWriter->startElement("c:$property");
+                $objWriter->writeAttribute('val', $propertyVal);
+                $objWriter->endElement();
+            }
+            $property = 'majorTimeUnit';
+            $propertyVal = $yAxis->getAxisOptionsProperty($property);
+            if (!empty($propertyVal)) {
+                $objWriter->startElement("c:$property");
+                $objWriter->writeAttribute('val', $propertyVal);
+                $objWriter->endElement();
+            }
+            $property = 'minorTimeUnit';
+            $propertyVal = $yAxis->getAxisOptionsProperty($property);
+            if (!empty($propertyVal)) {
+                $objWriter->startElement("c:$property");
+                $objWriter->writeAttribute('val', $propertyVal);
+                $objWriter->endElement();
+            }
+        }
 
         if ($isMultiLevelSeries) {
             $objWriter->startElement('c:noMultiLvlLbl');
@@ -713,7 +738,7 @@ class Chart extends WriterPart
      */
     private function writeValueAxis(XMLWriter $objWriter, ?Title $yAxisLabel, $groupType, $id1, $id2, $isMultiLevelSeries, Axis $xAxis, bool $reverse = false): void
     {
-        $objWriter->startElement('c:valAx');
+        $objWriter->startElement('c:' . Axis::AXIS_TYPE_VALUE);
         $majorGridlines = $xAxis->getMajorGridlines();
         $minorGridlines = $xAxis->getMinorGridlines();
 
@@ -1161,7 +1186,7 @@ class Chart extends WriterPart
                         $objWriter->endElement(); // a:ln
                     }
                 }
-                $nofill = $groupType == DataSeries::TYPE_STOCKCHART || ($groupType === DataSeries::TYPE_SCATTERCHART && !$plotSeriesValues->getScatterLines());
+                $nofill = $groupType === DataSeries::TYPE_STOCKCHART || (($groupType === DataSeries::TYPE_SCATTERCHART || $groupType === DataSeries::TYPE_LINECHART) && !$plotSeriesValues->getScatterLines());
                 if ($callLineStyles) {
                     $this->writeLineStyles($objWriter, $plotSeriesValues, $nofill);
                     $this->writeEffects($objWriter, $plotSeriesValues);
@@ -1214,10 +1239,18 @@ class Chart extends WriterPart
                     $period = $trendLine->getPeriod();
                     $dispRSqr = $trendLine->getDispRSqr();
                     $dispEq = $trendLine->getDispEq();
+                    $forward = $trendLine->getForward();
+                    $backward = $trendLine->getBackward();
+                    $intercept = $trendLine->getIntercept();
+                    $name = $trendLine->getName();
                     $trendLineColor = $trendLine->getLineColor(); // ChartColor
-                    $trendLineWidth = $trendLine->getLineStyleProperty('width');
 
                     $objWriter->startElement('c:trendline'); // N.B. lowercase 'ell'
+                    if ($name !== '') {
+                        $objWriter->startElement('c:name');
+                        $objWriter->writeRawData($name);
+                        $objWriter->endElement(); // c:name
+                    }
                     $objWriter->startElement('c:spPr');
 
                     if (!$trendLineColor->isUsable()) {
@@ -1237,6 +1270,21 @@ class Chart extends WriterPart
                     $objWriter->startElement('c:trendlineType'); // N.B lowercase 'ell'
                     $objWriter->writeAttribute('val', $trendLineType);
                     $objWriter->endElement(); // trendlineType
+                    if ($backward !== 0.0) {
+                        $objWriter->startElement('c:backward');
+                        $objWriter->writeAttribute('val', "$backward");
+                        $objWriter->endElement(); // c:backward
+                    }
+                    if ($forward !== 0.0) {
+                        $objWriter->startElement('c:forward');
+                        $objWriter->writeAttribute('val', "$forward");
+                        $objWriter->endElement(); // c:forward
+                    }
+                    if ($intercept !== 0.0) {
+                        $objWriter->startElement('c:intercept');
+                        $objWriter->writeAttribute('val', "$intercept");
+                        $objWriter->endElement(); // c:intercept
+                    }
                     if ($trendLineType == TrendLine::TRENDLINE_POLYNOMIAL) {
                         $objWriter->startElement('c:order');
                         $objWriter->writeAttribute('val', $order);
@@ -1646,11 +1694,11 @@ class Chart extends WriterPart
     private function writeAlternateContent(XMLWriter $objWriter): void
     {
         $objWriter->startElement('mc:AlternateContent');
-        $objWriter->writeAttribute('xmlns:mc', 'http://schemas.openxmlformats.org/markup-compatibility/2006');
+        $objWriter->writeAttribute('xmlns:mc', Namespaces::COMPATIBILITY);
 
         $objWriter->startElement('mc:Choice');
         $objWriter->writeAttribute('Requires', 'c14');
-        $objWriter->writeAttribute('xmlns:c14', 'http://schemas.microsoft.com/office/drawing/2007/8/2/chart');
+        $objWriter->writeAttribute('xmlns:c14', Namespaces::CHART_ALTERNATE);
 
         $objWriter->startElement('c14:style');
         $objWriter->writeAttribute('val', '102');

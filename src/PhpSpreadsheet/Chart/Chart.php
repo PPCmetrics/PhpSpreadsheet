@@ -465,8 +465,8 @@ class Chart
     /**
      * Set the offset position within the Top Left cell for the chart.
      *
-     * @param int $xOffset
-     * @param int $yOffset
+     * @param ?int $xOffset
+     * @param ?int $yOffset
      *
      * @return $this
      */
@@ -589,8 +589,8 @@ class Chart
     /**
      * Set the offset position within the Bottom Right cell for the chart.
      *
-     * @param int $xOffset
-     * @param int $yOffset
+     * @param ?int $xOffset
+     * @param ?int $yOffset
      *
      * @return $this
      */
@@ -787,9 +787,11 @@ class Chart
         return $this->roundedCorners;
     }
 
-    public function setRoundedCorners(bool $roundedCorners): self
+    public function setRoundedCorners(?bool $roundedCorners): self
     {
-        $this->roundedCorners = $roundedCorners;
+        if ($roundedCorners !== null) {
+            $this->roundedCorners = $roundedCorners;
+        }
 
         return $this;
     }
