@@ -1349,11 +1349,11 @@ class Html extends BaseWriter
                 $cssClass .= ' ' . $cell->getDataType();
             } elseif (is_array($cssClass)) {
                 if ($cellType == 'th') {
-                    if (isset($this->cssStyles['th.style' . $cell->getXfIndex()])) {
+                    if (isset($this->cssStyles['th.style' . $cell->getXfIndex() . ', th.style' . $cell->getXfIndex()])) {//PPCmetrics
                         $cssClass = array_merge($cssClass, $this->cssStyles['th.style' . $cell->getXfIndex()]);
                     }
                 } else {
-                    if (isset($this->cssStyles['td.style' . $cell->getXfIndex()])) {
+                    if (isset($this->cssStyles['td.style' . $cell->getXfIndex() . ', th.style' . $cell->getXfIndex()])) {//PPCmetrics
                         $cssClass = array_merge($cssClass, $this->cssStyles['td.style' . $cell->getXfIndex()]);
                     }
                 }
