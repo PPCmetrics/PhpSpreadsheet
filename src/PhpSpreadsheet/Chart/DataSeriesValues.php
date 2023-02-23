@@ -79,6 +79,9 @@ class DataSeriesValues extends Properties
      */
     private $fillColor;
 
+    /** @var ChartColor *///PPCmetrics
+    private $borderColor;//PPCmetrics
+
     /** @var bool */
     private $scatterLines = true;
 
@@ -150,6 +153,7 @@ class DataSeriesValues extends Properties
         parent::__construct();
         $this->markerFillColor = new ChartColor();
         $this->markerBorderColor = new ChartColor();
+        $this->borderColor = new ChartColor();//PPCmetrics
         $this->setDataType($dataType);
         $this->dataSource = $dataSource;
         $this->formatCode = $formatCode;
@@ -440,6 +444,16 @@ class DataSeriesValues extends Properties
         $this->lineStyleProperties['width'] = $width;
 
         return $this;
+    }
+
+    public function getBorderColor(): ChartColor//PPCmetrics
+    {
+        return $this->borderColor;
+    }
+
+    public function setBorderColor(ChartColor $borderColor)//PPCmetrics
+    {
+        $this->borderColor = $borderColor;
     }
 
     /**

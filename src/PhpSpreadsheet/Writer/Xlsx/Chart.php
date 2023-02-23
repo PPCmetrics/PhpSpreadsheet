@@ -1165,6 +1165,13 @@ class Chart extends WriterPart
                     }
                     $objWriter->endElement();
                     $objWriter->endElement();
+                    $borderColor = $plotSeriesValues->getBorderColor();//PPCmetrics
+                    $borderUsed = $borderColor->isUsable();//PPCmetrics
+                    if ($borderUsed) {//PPCmetrics
+                        $objWriter->startElement('a:ln');//PPCmetrics
+                        $this->writeColor($objWriter, $borderColor);//PPCmetrics
+                        $objWriter->endElement(); // a:ln//PPCmetrics
+                    }//PPCmetrics
                     $objWriter->endElement();
                 }
             }
