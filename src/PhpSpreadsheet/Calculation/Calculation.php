@@ -4186,6 +4186,7 @@ class Calculation
                     $stack->count() > 0 &&
                     ($o2 = $stack->last()) &&
                     isset(self::CALCULATION_OPERATORS[$o2['value']]) &&
+                    (isset(self::$operatorAssociativity[$opCharacter]) && isset(self::$operatorPrecedence[$opCharacter])) && //PPCmetrics
                     @(self::$operatorAssociativity[$opCharacter] ? self::$operatorPrecedence[$opCharacter] < self::$operatorPrecedence[$o2['value']] : self::$operatorPrecedence[$opCharacter] <= self::$operatorPrecedence[$o2['value']])
                 ) {
                     $output[] = $stack->pop(); //    Swap operands and higher precedence operators from the stack to the output

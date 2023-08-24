@@ -324,6 +324,10 @@ abstract class Coordinate
      */
     public static function stringFromColumnIndex($columnIndex)
     {
+        //PPCmetrics
+        if ($columnIndex<1) {
+            write2err("Used wrong Columnindex $columnIndex");
+        }
         static $indexCache = [];
         static $lookupCache = ' ABCDEFGHIJKLMNOPQRSTUVWXYZ';
 

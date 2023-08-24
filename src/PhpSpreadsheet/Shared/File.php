@@ -114,7 +114,7 @@ class File
      */
     public static function sysGetTempDir(): string
     {
-        $path = sys_get_temp_dir();
+        /*$path = sys_get_temp_dir();
         if (self::$useUploadTempDirectory) {
             //  use upload-directory when defined to allow running on environments having very restricted
             //      open_basedir configs
@@ -127,7 +127,9 @@ class File
             }
         }
 
-        return realpath($path) ?: '';
+        return realpath($path) ?: '';*/
+        //PPCmetrics
+        return TEMPDIR;
     }
 
     public static function temporaryFilename(): string

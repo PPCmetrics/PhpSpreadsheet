@@ -16,6 +16,7 @@ use PhpOffice\PhpSpreadsheet\Worksheet\Drawing as WorksheetDrawing;
 use PhpOffice\PhpSpreadsheet\Worksheet\MemoryDrawing;
 use PhpOffice\PhpSpreadsheet\Writer\Exception as WriterException;
 use PhpOffice\PhpSpreadsheet\Writer\Xlsx\Chart;
+use PhpOffice\PhpSpreadsheet\Writer\Xlsx\ChartSheet;
 use PhpOffice\PhpSpreadsheet\Writer\Xlsx\Comments;
 use PhpOffice\PhpSpreadsheet\Writer\Xlsx\ContentTypes;
 use PhpOffice\PhpSpreadsheet\Writer\Xlsx\DocProps;
@@ -118,6 +119,11 @@ class Xlsx extends BaseWriter
     private $writerPartChart;
 
     /**
+     * @var ChartSheet
+     */
+    private $writerPartChartSheet;
+
+    /**
      * @var Comments
      */
     private $writerPartComments;
@@ -191,6 +197,7 @@ class Xlsx extends BaseWriter
         $this->setSpreadsheet($spreadsheet);
 
         $this->writerPartChart = new Chart($this);
+        $this->writerPartChartSheet = new ChartSheet($this);
         $this->writerPartComments = new Comments($this);
         $this->writerPartContentTypes = new ContentTypes($this);
         $this->writerPartDocProps = new DocProps($this);
@@ -227,6 +234,11 @@ class Xlsx extends BaseWriter
         return $this->writerPartChart;
     }
 
+    public function getWriterPartChartSheet(): ChartSheet
+    {
+        return $this->writerPartChartSheet;
+    }
+    
     public function getWriterPartComments(): Comments
     {
         return $this->writerPartComments;
@@ -388,14 +400,27 @@ class Xlsx extends BaseWriter
         $zipContent['xl/workbook.xml'] = $this->getWriterPartWorkbook()->writeWorkbook($this->spreadSheet, $this->preCalculateFormulas);
 
         $chartCount = 0;
+        $drawingRef1 = $this->spreadSheet->getSheetCount();
         // Add worksheets
         for ($i = 0; $i < $this->spreadSheet->getSheetCount(); ++$i) {
-            $zipContent['xl/worksheets/sheet' . ($i + 1) . '.xml'] = $this->getWriterPartWorksheet()->writeWorksheet($this->spreadSheet->getSheet($i), $this->stringTable, $this->includeCharts);
+            if ($this->includeCharts && $this->spreadSheet->getSheet($i)->getChartSheet()) {
+                $zipContent['xl/chartsheets/sheet' . ($i + 1) . '.xml'] = $this->getWriterPartChartSheet()->writeChartsheet($this->spreadSheet->getSheet($i), $this->stringTable, $this->includeCharts);
+            } else {
+                $zipContent['xl/worksheets/sheet' . ($i + 1) . '.xml'] = $this->getWriterPartWorksheet()->writeWorksheet($this->spreadSheet->getSheet($i), $this->stringTable, $this->includeCharts);
+            }
             if ($this->includeCharts) {
                 $charts = $this->spreadSheet->getSheet($i)->getChartCollection();
                 if (count($charts) > 0) {
                     foreach ($charts as $chart) {
                         $zipContent['xl/charts/chart' . ($chartCount + 1) . '.xml'] = $this->getWriterPartChart()->writeChart($chart, $this->preCalculateFormulas);
+                        if ($chart->getUserShapesCount() > 0) {
+                            // Drawing relationships
+                            $startpoint = $drawingRef1;
+                            $zipContent['xl/charts/_rels/chart' . ($chartCount + 1) . '.xml.rels'] = $this->getWriterPartRels()->writeUserShapeRelationships($chart, $drawingRef1);
+                            ++$startpoint;
+                            // Drawings
+                            $zipContent['xl/drawings/drawing' . ($startpoint) . '.xml'] = $this->getWriterPartDrawing()->writeUserShapes($chart->getUserShapes());
+                        }
                         ++$chartCount;
                     }
                 }
@@ -407,7 +432,7 @@ class Xlsx extends BaseWriter
         // Add worksheet relationships (drawings, ...)
         for ($i = 0; $i < $this->spreadSheet->getSheetCount(); ++$i) {
             // Add relationships
-            $zipContent['xl/worksheets/_rels/sheet' . ($i + 1) . '.xml.rels'] = $this->getWriterPartRels()->writeWorksheetRelationships($this->spreadSheet->getSheet($i), ($i + 1), $this->includeCharts, $tableRef1);
+            $zipContent['xl/'.(($this->includeCharts && $this->spreadSheet->getSheet($i)->getChartSheet()) ? 'chart': 'work').'sheets/_rels/sheet' . ($i + 1) . '.xml.rels'] = $this->getWriterPartRels()->writeWorksheetRelationships($this->spreadSheet->getSheet($i), ($i + 1), $this->includeCharts);
 
             // Add unparsedLoadedData
             $sheetCodeName = $this->spreadSheet->getSheet($i)->getCodeName();

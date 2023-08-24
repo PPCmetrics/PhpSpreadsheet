@@ -179,7 +179,7 @@ class Worksheet extends WriterPart
     /**
      * Write SheetPr.
      */
-    private function writeSheetPr(XMLWriter $objWriter, PhpspreadsheetWorksheet $worksheet): void
+    protected function writeSheetPr(XMLWriter $objWriter, PhpspreadsheetWorksheet $worksheet): void
     {
         // sheetPr
         $objWriter->startElement('sheetPr');
@@ -243,7 +243,7 @@ class Worksheet extends WriterPart
     /**
      * Write SheetViews.
      */
-    private function writeSheetViews(XMLWriter $objWriter, PhpspreadsheetWorksheet $worksheet): void
+    protected function writeSheetViews(XMLWriter $objWriter, PhpspreadsheetWorksheet $worksheet): void
     {
         // sheetViews
         $objWriter->startElement('sheetViews');
@@ -958,7 +958,7 @@ class Worksheet extends WriterPart
     /**
      * Write PageMargins.
      */
-    private function writePageMargins(XMLWriter $objWriter, PhpspreadsheetWorksheet $worksheet): void
+    protected function writePageMargins(XMLWriter $objWriter, PhpspreadsheetWorksheet $worksheet): void
     {
         // pageMargins
         $objWriter->startElement('pageMargins');
@@ -1377,7 +1377,7 @@ class Worksheet extends WriterPart
      *
      * @param bool $includeCharts Flag indicating if we should include drawing details for charts
      */
-    private function writeDrawings(XMLWriter $objWriter, PhpspreadsheetWorksheet $worksheet, $includeCharts = false): void
+    protected function writeDrawings(XMLWriter $objWriter, PhpspreadsheetWorksheet $worksheet, $includeCharts = false): void
     {
         $unparsedLoadedData = $worksheet->getParentOrThrow()->getUnparsedLoadedData();
         $hasUnparsedDrawing = isset($unparsedLoadedData['sheets'][$worksheet->getCodeName()]['drawingOriginalIds']);

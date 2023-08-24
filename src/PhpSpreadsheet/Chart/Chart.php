@@ -156,6 +156,10 @@ class Chart
     /** @var ChartColor */
     private $fillColor;
 
+  
+  
+    private $userShapes = [];
+
     /**
      * Create a new Chart.
      * majorGridlines and minorGridlines are deprecated, moved to Axis.
@@ -662,6 +666,17 @@ class Chart
     public function getBottomRightYOffset(): int
     {
         return $this->bottomRightYOffset;
+    }
+
+    public function addUserShape($userShape) {
+        $this->userShapes[] = $userShape;
+        return $this;
+    }
+    public function getUserShapes() {
+        return $this->userShapes;
+    }
+    public function getUserShapesCount() {
+        return count($this->userShapes);
     }
 
     public function refresh(): void

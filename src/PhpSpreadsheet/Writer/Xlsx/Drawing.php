@@ -80,6 +80,10 @@ class Drawing extends WriterPart
         return $objWriter->getData();
     }
 
+    public function writeUserShapes($userShapes) {
+        return '<c:userShapes xmlns:c="http://schemas.openxmlformats.org/drawingml/2006/chart">'.implode("",$userShapes).'</c:userShapes>';
+    }
+        
     /**
      * Write drawings to XML format.
      *

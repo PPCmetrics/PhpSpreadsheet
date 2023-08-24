@@ -42,6 +42,8 @@ class NumberFormat extends Supervisor
     const FORMAT_DATE_TIME7 = 'i:s.S';
     const FORMAT_DATE_TIME8 = 'h:mm:ss;@';
     const FORMAT_DATE_YYYYMMDDSLASH = 'yyyy/mm/dd;@';
+    //PPCmetrics
+    const FORMAT_DATE_PPC = "dd.mm.yyyy";
 
     const DATE_TIME_OR_DATETIME_ARRAY = [
         self::FORMAT_DATE_YYYYMMDD,

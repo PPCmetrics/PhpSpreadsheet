@@ -28,6 +28,15 @@ class Title
     private $layout;
 
     /**
+     * Title orientation
+     * 
+     * @var string
+     */
+
+    private $orientation;
+
+
+    /**
      * Create a new Title.
      *
      * @param array|RichText|string $caption
@@ -111,5 +120,26 @@ class Title
     public function getLayout(): ?Layout
     {
         return $this->layout;
+    }
+
+    /**
+     * Get orientation.
+     * 
+     * @return string
+     */
+    public function getOrientation() {
+        return $this->orientation;
+    }
+
+    /**
+     * Set orientation.
+     * 
+     * @param string $orientation
+     * 
+     * @return $this
+     */
+    public function setOrientation($orientation) {
+        $this->orientation = $orientation;
+        return $this;
     }
 }

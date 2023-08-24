@@ -85,6 +85,40 @@ class Axis extends Properties
      */
     private $fillColor;
 
+    private $fontSize;
+
+    private $fontFamily;
+
+    private $fontBold;
+
+    public function getFontSize()
+    {
+        return $this->fontSize;
+    }
+    public function setFontSize($fontSize)
+    {
+        $this->fontSize = $fontSize;
+        return $this;
+    }
+    public function getFontFamily()
+    {
+        return $this->fontFamily;
+    }
+    public function setFontFamily($fontFamily)
+    {
+        $this->fontFamily = $fontFamily;
+        return $this;
+    }
+    public function getFontBold()
+    {
+        return $this->fontBold;
+    }
+    public function setFontBold($fontBold)
+    {
+        $this->fontBold = $fontBold;
+        return $this;
+    }
+
     private const NUMERIC_FORMAT = [
         Properties::FORMAT_CODE_NUMBER,
         Properties::FORMAT_CODE_DATE,
