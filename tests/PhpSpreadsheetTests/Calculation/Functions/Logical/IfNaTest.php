@@ -3,31 +3,20 @@
 namespace PhpOffice\PhpSpreadsheetTests\Calculation\Functions\Logical;
 
 use PhpOffice\PhpSpreadsheet\Calculation\Calculation;
-use PhpOffice\PhpSpreadsheet\Calculation\Functions;
-use PhpOffice\PhpSpreadsheet\Calculation\Logical;
-use PHPUnit\Framework\TestCase;
 
-class IfNaTest extends TestCase
+class IfNaTest extends AllSetupTeardown
 {
-    protected function setUp(): void
-    {
-        Functions::setCompatibilityMode(Functions::COMPATIBILITY_EXCEL);
-    }
-
     /**
      * @dataProvider providerIFNA
      *
      * @param mixed $expectedResult
-     * @param mixed $value
-     * @param mixed $return
      */
-    public function testIFNA($expectedResult, $value, $return): void
+    public function testIFNA($expectedResult, ...$args): void
     {
-        $result = Logical::IFNA($value, $return);
-        self::assertEquals($expectedResult, $result);
+        $this->runTestCase('IFNA', $expectedResult, ...$args);
     }
 
-    public function providerIFNA(): array
+    public static function providerIFNA(): array
     {
         return require 'tests/data/Calculation/Logical/IFNA.php';
     }
@@ -44,7 +33,7 @@ class IfNaTest extends TestCase
         self::assertEquals($expectedResult, $result);
     }
 
-    public function providerIfNaArray(): array
+    public static function providerIfNaArray(): array
     {
         return [
             'vector' => [

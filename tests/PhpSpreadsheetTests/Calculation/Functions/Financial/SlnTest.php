@@ -2,17 +2,8 @@
 
 namespace PhpOffice\PhpSpreadsheetTests\Calculation\Functions\Financial;
 
-use PhpOffice\PhpSpreadsheet\Calculation\Financial;
-use PhpOffice\PhpSpreadsheet\Calculation\Functions;
-use PHPUnit\Framework\TestCase;
-
-class SlnTest extends TestCase
+class SlnTest extends AllSetupTeardown
 {
-    protected function setUp(): void
-    {
-        Functions::setCompatibilityMode(Functions::COMPATIBILITY_EXCEL);
-    }
-
     /**
      * @dataProvider providerSLN
      *
@@ -20,11 +11,10 @@ class SlnTest extends TestCase
      */
     public function testSLN($expectedResult, array $args): void
     {
-        $result = Financial::SLN(...$args);
-        self::assertEqualsWithDelta($expectedResult, $result, 1E-8);
+        $this->runTestCase('SLN', $expectedResult, $args);
     }
 
-    public function providerSLN(): array
+    public static function providerSLN(): array
     {
         return require 'tests/data/Calculation/Financial/SLN.php';
     }

@@ -3,17 +3,9 @@
 namespace PhpOffice\PhpSpreadsheetTests\Calculation\Functions\Statistical;
 
 use PhpOffice\PhpSpreadsheet\Calculation\Calculation;
-use PhpOffice\PhpSpreadsheet\Calculation\Functions;
-use PhpOffice\PhpSpreadsheet\Calculation\Statistical\Permutations;
-use PHPUnit\Framework\TestCase;
 
-class PermutationATest extends TestCase
+class PermutationATest extends AllSetupTeardown
 {
-    protected function setUp(): void
-    {
-        Functions::setCompatibilityMode(Functions::COMPATIBILITY_EXCEL);
-    }
-
     /**
      * @dataProvider providerPERMUT
      *
@@ -21,11 +13,10 @@ class PermutationATest extends TestCase
      */
     public function testPERMUT($expectedResult, ...$args): void
     {
-        $result = Permutations::PERMUTATIONA(...$args);
-        self::assertEqualsWithDelta($expectedResult, $result, 1E-12);
+        $this->runTestCases('PERMUTATIONA', $expectedResult, ...$args);
     }
 
-    public function providerPERMUT(): array
+    public static function providerPERMUT(): array
     {
         return require 'tests/data/Calculation/Statistical/PERMUTATIONA.php';
     }
@@ -42,7 +33,7 @@ class PermutationATest extends TestCase
         self::assertEqualsWithDelta($expectedResult, $result, 1.0e-14);
     }
 
-    public function providerPermutationAArray(): array
+    public static function providerPermutationAArray(): array
     {
         return [
             'first argument row vector' => [

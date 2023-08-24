@@ -3,15 +3,15 @@
 namespace PhpOffice\PhpSpreadsheetTests\Calculation\Functions\Information;
 
 use PhpOffice\PhpSpreadsheet\Calculation\Calculation;
-use PhpOffice\PhpSpreadsheet\Calculation\Functions;
 use PhpOffice\PhpSpreadsheet\Calculation\Information\ExcelError;
+use PhpOffice\PhpSpreadsheet\Calculation\Information\Value;
 use PHPUnit\Framework\TestCase;
 
 class IsOddTest extends TestCase
 {
     public function testIsOddNoArgument(): void
     {
-        $result = Functions::isOdd();
+        $result = Value::isOdd();
         self::assertSame(ExcelError::NAME(), $result);
     }
 
@@ -23,11 +23,11 @@ class IsOddTest extends TestCase
      */
     public function testIsOdd($expectedResult, $value): void
     {
-        $result = Functions::isOdd($value);
+        $result = Value::isOdd($value);
         self::assertEquals($expectedResult, $result);
     }
 
-    public function providerIsOdd(): array
+    public static function providerIsOdd(): array
     {
         return require 'tests/data/Calculation/Information/IS_ODD.php';
     }
@@ -44,7 +44,7 @@ class IsOddTest extends TestCase
         self::assertEquals($expectedResult, $result);
     }
 
-    public function providerIsOddArray(): array
+    public static function providerIsOddArray(): array
     {
         return [
             'vector' => [

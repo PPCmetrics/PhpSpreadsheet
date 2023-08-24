@@ -2,10 +2,7 @@
 
 namespace PhpOffice\PhpSpreadsheetTests\Calculation\Functions\Statistical;
 
-use PhpOffice\PhpSpreadsheet\Calculation\Statistical;
-use PHPUnit\Framework\TestCase;
-
-class MinTest extends TestCase
+class MinTest extends AllSetupTeardown
 {
     /**
      * @dataProvider providerMIN
@@ -14,11 +11,10 @@ class MinTest extends TestCase
      */
     public function testMIN($expectedResult, ...$args): void
     {
-        $result = Statistical::MIN(...$args);
-        self::assertEqualsWithDelta($expectedResult, $result, 1E-12);
+        $this->runTestCaseReference('MIN', $expectedResult, ...$args);
     }
 
-    public function providerMIN(): array
+    public static function providerMIN(): array
     {
         return require 'tests/data/Calculation/Statistical/MIN.php';
     }

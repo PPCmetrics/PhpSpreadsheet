@@ -3,24 +3,20 @@
 namespace PhpOffice\PhpSpreadsheetTests\Calculation\Functions\Statistical;
 
 use PhpOffice\PhpSpreadsheet\Calculation\Calculation;
-use PhpOffice\PhpSpreadsheet\Calculation\Statistical;
-use PHPUnit\Framework\TestCase;
 
-class GaussTest extends TestCase
+class GaussTest extends AllSetupTeardown
 {
     /**
      * @dataProvider providerGAUSS
      *
      * @param mixed $expectedResult
-     * @param mixed $testValue
      */
-    public function testGAUSS($expectedResult, $testValue): void
+    public function testGAUSS($expectedResult, ...$args): void
     {
-        $result = Statistical::GAUSS($testValue);
-        self::assertEqualsWithDelta($expectedResult, $result, 1E-12);
+        $this->runTestCases('GAUSS', $expectedResult, ...$args);
     }
 
-    public function providerGAUSS(): array
+    public static function providerGAUSS(): array
     {
         return require 'tests/data/Calculation/Statistical/GAUSS.php';
     }
@@ -37,7 +33,7 @@ class GaussTest extends TestCase
         self::assertEqualsWithDelta($expectedResult, $result, 1.0e-14);
     }
 
-    public function providerGaussArray(): array
+    public static function providerGaussArray(): array
     {
         return [
             'matrix' => [

@@ -54,7 +54,7 @@ class IndirectTest extends AllSetupTeardown
         self::assertSame($expectedResult, $result);
     }
 
-    public function providerINDIRECT(): array
+    public static function providerINDIRECT(): array
     {
         return require 'tests/data/Calculation/LookupRef/INDIRECT.php';
     }
@@ -128,7 +128,7 @@ class IndirectTest extends AllSetupTeardown
         $sheet = $this->getSheet();
         $sheet->getCell('A1')->setValue('A2');
         $sheet->getCell('A2')->setValue('This is it');
-        $result = \PhpOffice\PhpSpreadsheet\Calculation\LookupRef::INDIRECT('A2', $sheet->getCell('A1'));
+        $result = /** @scrutinizer ignore-deprecated */ \PhpOffice\PhpSpreadsheet\Calculation\LookupRef::INDIRECT('A2', $sheet->getCell('A1'));
         $result = \PhpOffice\PhpSpreadsheet\Calculation\Functions::flattenSingleValue($result);
         self::assertSame('This is it', $result);
     }
@@ -151,7 +151,7 @@ class IndirectTest extends AllSetupTeardown
         self::assertSame($expectedResult, $sheet->getCell('B2')->getCalculatedValue());
     }
 
-    public function providerRelative(): array
+    public static function providerRelative(): array
     {
         return [
             'same row with bracket next column' => ['c2', 'R[]C[+1]'],

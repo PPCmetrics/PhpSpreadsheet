@@ -3,14 +3,17 @@
 namespace PhpOffice\PhpSpreadsheetTests\Calculation\Functions\Engineering;
 
 use PhpOffice\PhpSpreadsheet\Calculation\Calculation;
-use PhpOffice\PhpSpreadsheet\Calculation\Engineering;
+use PhpOffice\PhpSpreadsheet\Calculation\Engineering\ComplexFunctions;
+use PhpOffice\PhpSpreadsheet\Calculation\Exception as CalculationException;
 use PhpOffice\PhpSpreadsheet\Calculation\Functions;
+use PhpOffice\PhpSpreadsheet\Spreadsheet;
+use PhpOffice\PhpSpreadsheetTests\Calculation\Functions\FormulaArguments;
 use PhpOffice\PhpSpreadsheetTests\Custom\ComplexAssert;
 use PHPUnit\Framework\TestCase;
 
 class ImCosTest extends TestCase
 {
-    const COMPLEX_PRECISION = 1E-8;
+    const COMPLEX_PRECISION = 1E-12;
 
     /**
      * @var ComplexAssert
@@ -27,20 +30,97 @@ class ImCosTest extends TestCase
      * @dataProvider providerIMCOS
      *
      * @param mixed $expectedResult
-     * @param mixed $value
      */
-    public function testIMCOS($expectedResult, $value): void
+    public function testDirectCallToIMCOS($expectedResult, ...$args): void
     {
-        $result = Engineering::IMCOS($value);
+        /** @scrutinizer ignore-call */
+        $result = ComplexFunctions::IMCOS(...$args);
         self::assertTrue(
             $this->complexAssert->assertComplexEquals($expectedResult, $result, self::COMPLEX_PRECISION),
             $this->complexAssert->getErrorMessage()
         );
     }
 
-    public function providerIMCOS(): array
+    private function trimIfQuoted(string $value): string
+    {
+        return trim($value, '"');
+    }
+
+    /**
+     * @dataProvider providerIMCOS
+     *
+     * @param mixed $expectedResult
+     */
+    public function testIMCOSAsFormula($expectedResult, ...$args): void
+    {
+        $arguments = new FormulaArguments(...$args);
+
+        $calculation = Calculation::getInstance();
+        $formula = "=IMCOS({$arguments})";
+
+        $result = $calculation->_calculateFormulaValue($formula);
+        self::assertTrue(
+            $this->complexAssert->assertComplexEquals($expectedResult, $this->trimIfQuoted((string) $result), self::COMPLEX_PRECISION),
+            $this->complexAssert->getErrorMessage()
+        );
+    }
+
+    /**
+     * @dataProvider providerIMCOS
+     *
+     * @param mixed $expectedResult
+     */
+    public function testIMCOSInWorksheet($expectedResult, ...$args): void
+    {
+        $arguments = new FormulaArguments(...$args);
+
+        $spreadsheet = new Spreadsheet();
+        $worksheet = $spreadsheet->getActiveSheet();
+        $argumentCells = $arguments->populateWorksheet($worksheet);
+        $formula = "=IMCOS({$argumentCells})";
+
+        $result = $worksheet->setCellValue('A1', $formula)
+            ->getCell('A1')
+            ->getCalculatedValue();
+        self::assertTrue(
+            $this->complexAssert->assertComplexEquals($expectedResult, $result, self::COMPLEX_PRECISION),
+            $this->complexAssert->getErrorMessage()
+        );
+
+        $spreadsheet->disconnectWorksheets();
+    }
+
+    public static function providerIMCOS(): array
     {
         return require 'tests/data/Calculation/Engineering/IMCOS.php';
+    }
+
+    /**
+     * @dataProvider providerUnhappyIMCOS
+     */
+    public function testIMCOSUnhappyPath(string $expectedException, ...$args): void
+    {
+        $arguments = new FormulaArguments(...$args);
+
+        $spreadsheet = new Spreadsheet();
+        $worksheet = $spreadsheet->getActiveSheet();
+        $argumentCells = $arguments->populateWorksheet($worksheet);
+        $formula = "=IMCOS({$argumentCells})";
+
+        $this->expectException(CalculationException::class);
+        $this->expectExceptionMessage($expectedException);
+        $worksheet->setCellValue('A1', $formula)
+            ->getCell('A1')
+            ->getCalculatedValue();
+
+        $spreadsheet->disconnectWorksheets();
+    }
+
+    public static function providerUnhappyIMCOS(): array
+    {
+        return [
+            ['Formula Error: Wrong number of arguments for IMCOS() function'],
+        ];
     }
 
     /**
@@ -55,7 +135,7 @@ class ImCosTest extends TestCase
         self::assertEquals($expectedResult, $result);
     }
 
-    public function providerImCosArray(): array
+    public static function providerImCosArray(): array
     {
         return [
             'row/column vector' => [

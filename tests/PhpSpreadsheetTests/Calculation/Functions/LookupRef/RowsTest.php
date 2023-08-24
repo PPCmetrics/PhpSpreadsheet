@@ -16,11 +16,11 @@ class RowsTest extends TestCase
      */
     public function testROWS($expectedResult, $arg): void
     {
-        $result = LookupRef::ROWS($arg);
+        $result = LookupRef\RowColumnInformation::ROWS($arg);
         self::assertEquals($expectedResult, $result);
     }
 
-    public function providerROWS(): array
+    public static function providerROWS(): array
     {
         return require 'tests/data/Calculation/LookupRef/ROWS.php';
     }
@@ -37,7 +37,7 @@ class RowsTest extends TestCase
         self::assertEquals($expectedResult, $result);
     }
 
-    public function providerRowsArray(): array
+    public static function providerRowsArray(): array
     {
         return [
             [

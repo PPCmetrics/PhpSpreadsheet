@@ -3,17 +3,11 @@
 namespace PhpOffice\PhpSpreadsheetTests\Calculation\Functions\LookupRef;
 
 use PhpOffice\PhpSpreadsheet\Calculation\Calculation;
-use PhpOffice\PhpSpreadsheet\Calculation\Functions;
 use PhpOffice\PhpSpreadsheet\Calculation\LookupRef;
 use PHPUnit\Framework\TestCase;
 
 class ChooseTest extends TestCase
 {
-    protected function setUp(): void
-    {
-        Functions::setCompatibilityMode(Functions::COMPATIBILITY_EXCEL);
-    }
-
     /**
      * @dataProvider providerCHOOSE
      *
@@ -21,11 +15,11 @@ class ChooseTest extends TestCase
      */
     public function testCHOOSE($expectedResult, ...$args): void
     {
-        $result = LookupRef::CHOOSE(...$args);
+        $result = LookupRef\Selection::choose(...$args);
         self::assertEquals($expectedResult, $result);
     }
 
-    public function providerCHOOSE(): array
+    public static function providerCHOOSE(): array
     {
         return require 'tests/data/Calculation/LookupRef/CHOOSE.php';
     }
@@ -43,7 +37,7 @@ class ChooseTest extends TestCase
         self::assertEquals($expectedResult, $result);
     }
 
-    public function providerChooseArray(): array
+    public static function providerChooseArray(): array
     {
         return [
             'row vector' => [

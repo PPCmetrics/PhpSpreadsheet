@@ -2,17 +2,8 @@
 
 namespace PhpOffice\PhpSpreadsheetTests\Calculation\Functions\Financial;
 
-use PhpOffice\PhpSpreadsheet\Calculation\Financial;
-use PhpOffice\PhpSpreadsheet\Calculation\Functions;
-use PHPUnit\Framework\TestCase;
-
-class PriceMatTest extends TestCase
+class PriceMatTest extends AllSetupTeardown
 {
-    protected function setUp(): void
-    {
-        Functions::setCompatibilityMode(Functions::COMPATIBILITY_EXCEL);
-    }
-
     /**
      * @dataProvider providerPRICEMAT
      *
@@ -20,11 +11,10 @@ class PriceMatTest extends TestCase
      */
     public function testPRICEMAT($expectedResult, ...$args): void
     {
-        $result = Financial::PRICEMAT(...$args);
-        self::assertEqualsWithDelta($expectedResult, $result, 1E-8);
+        $this->runTestCase('PRICEMAT', $expectedResult, $args);
     }
 
-    public function providerPRICEMAT(): array
+    public static function providerPRICEMAT(): array
     {
         return require 'tests/data/Calculation/Financial/PRICEMAT.php';
     }

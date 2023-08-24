@@ -3,17 +3,9 @@
 namespace PhpOffice\PhpSpreadsheetTests\Calculation\Functions\Statistical;
 
 use PhpOffice\PhpSpreadsheet\Calculation\Calculation;
-use PhpOffice\PhpSpreadsheet\Calculation\Functions;
-use PhpOffice\PhpSpreadsheet\Calculation\Statistical;
-use PHPUnit\Framework\TestCase;
 
-class BinomInvTest extends TestCase
+class BinomInvTest extends AllSetupTeardown
 {
-    protected function setUp(): void
-    {
-        Functions::setCompatibilityMode(Functions::COMPATIBILITY_EXCEL);
-    }
-
     /**
      * @dataProvider providerBINOMINV
      *
@@ -21,11 +13,10 @@ class BinomInvTest extends TestCase
      */
     public function testBINOMINV($expectedResult, ...$args): void
     {
-        $result = Statistical::CRITBINOM(...$args);
-        self::assertEqualsWithDelta($expectedResult, $result, 1E-12);
+        $this->runTestCaseReference('BINOM.INV', $expectedResult, ...$args);
     }
 
-    public function providerBINOMINV(): array
+    public static function providerBINOMINV(): array
     {
         return require 'tests/data/Calculation/Statistical/BINOMINV.php';
     }
@@ -46,7 +37,7 @@ class BinomInvTest extends TestCase
         self::assertEqualsWithDelta($expectedResult, $result, 1.0e-14);
     }
 
-    public function providerBinomInvArray(): array
+    public static function providerBinomInvArray(): array
     {
         return [
             'row/column vectors' => [

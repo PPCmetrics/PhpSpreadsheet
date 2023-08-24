@@ -3,10 +3,8 @@
 namespace PhpOffice\PhpSpreadsheetTests\Calculation\Functions\Statistical;
 
 use PhpOffice\PhpSpreadsheet\Calculation\Calculation;
-use PhpOffice\PhpSpreadsheet\Calculation\Statistical;
-use PHPUnit\Framework\TestCase;
 
-class NormDistTest extends TestCase
+class NormDistTest extends AllSetupTeardown
 {
     /**
      * @dataProvider providerNORMDIST
@@ -15,11 +13,10 @@ class NormDistTest extends TestCase
      */
     public function testNORMDIST($expectedResult, ...$args): void
     {
-        $result = Statistical::NORMDIST(...$args);
-        self::assertEqualsWithDelta($expectedResult, $result, 1E-12);
+        $this->runTestCases('NORMDIST', $expectedResult, ...$args);
     }
 
-    public function providerNORMDIST(): array
+    public static function providerNORMDIST(): array
     {
         return require 'tests/data/Calculation/Statistical/NORMDIST.php';
     }
@@ -36,7 +33,7 @@ class NormDistTest extends TestCase
         self::assertEqualsWithDelta($expectedResult, $result, 1.0e-14);
     }
 
-    public function providerNormDistArray(): array
+    public static function providerNormDistArray(): array
     {
         return [
             'row/column vectors' => [

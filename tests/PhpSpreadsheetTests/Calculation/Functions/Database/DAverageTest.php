@@ -2,17 +2,11 @@
 
 namespace PhpOffice\PhpSpreadsheetTests\Calculation\Functions\Database;
 
-use PhpOffice\PhpSpreadsheet\Calculation\Database;
-use PhpOffice\PhpSpreadsheet\Calculation\Functions;
-use PHPUnit\Framework\TestCase;
+use PhpOffice\PhpSpreadsheet\Calculation\Database\DAverage;
+use PhpOffice\PhpSpreadsheet\Calculation\Information\ExcelError;
 
-class DAverageTest extends TestCase
+class DAverageTest extends SetupTeardownDatabases
 {
-    protected function setUp(): void
-    {
-        Functions::setCompatibilityMode(Functions::COMPATIBILITY_EXCEL);
-    }
-
     /**
      * @dataProvider providerDAverage
      *
@@ -21,54 +15,32 @@ class DAverageTest extends TestCase
      * @param mixed $field
      * @param mixed $criteria
      */
-    public function testDAverage($expectedResult, $database, $field, $criteria): void
+    public function testDirectCallToDAverage($expectedResult, $database, $field, $criteria): void
     {
-        $result = Database::DAVERAGE($database, $field, $criteria);
+        $result = DAverage::evaluate($database, $field, $criteria);
         self::assertEqualsWithDelta($expectedResult, $result, 1.0e-12);
     }
 
-    private function database1(): array
+    /**
+     * @dataProvider providerDAverage
+     *
+     * @param mixed $expectedResult
+     * @param int|string $field
+     */
+    public function testDAverageAsWorksheetFormula($expectedResult, array $database, $field, array $criteria): void
     {
-        return [
-            ['Tree', 'Height', 'Age', 'Yield', 'Profit'],
-            ['Apple', 18, 20, 14, 105],
-            ['Pear', 12, 12, 10, 96],
-            ['Cherry', 13, 14, 9, 105],
-            ['Apple', 14, 15, 10, 75],
-            ['Pear', 9, 8, 8, 76.8],
-            ['Apple', 8, 9, 6, 45],
-        ];
+        $this->prepareWorksheetWithFormula('DAVERAGE', $database, $field, $criteria);
+
+        $result = $this->getSheet()->getCell(self::RESULT_CELL)->getCalculatedValue();
+        self::assertEqualsWithDelta($expectedResult, $result, 1.0e-12);
     }
 
-    private function database2(): array
-    {
-        return [
-            ['Quarter', 'Area', 'Sales Rep.', 'Sales'],
-            [1, 'North', 'Jeff', 223000],
-            [1, 'North', 'Chris', 125000],
-            [1, 'South', 'Carol', 456000],
-            [1, 'South', 'Tina', 289000],
-            [2, 'North', 'Jeff', 322000],
-            [2, 'North', 'Chris', 340000],
-            [2, 'South', 'Carol', 198000],
-            [2, 'South', 'Tina', 222000],
-            [3, 'North', 'Jeff', 310000],
-            [3, 'North', 'Chris', 250000],
-            [3, 'South', 'Carol', 460000],
-            [3, 'South', 'Tina', 395000],
-            [4, 'North', 'Jeff', 261000],
-            [4, 'North', 'Chris', 389000],
-            [4, 'South', 'Carol', 305000],
-            [4, 'South', 'Tina', 188000],
-        ];
-    }
-
-    public function providerDAverage(): array
+    public static function providerDAverage(): array
     {
         return [
             [
                 12,
-                $this->database1(),
+                self::database1(),
                 'Yield',
                 [
                     ['Tree', 'Height'],
@@ -76,14 +48,8 @@ class DAverageTest extends TestCase
                 ],
             ],
             [
-                13,
-                $this->database1(),
-                3,
-                $this->database1(),
-            ],
-            [
                 268333.333333333333,
-                $this->database2(),
+                self::database2(),
                 'Sales',
                 [
                     ['Quarter', 'Sales Rep.'],
@@ -92,18 +58,65 @@ class DAverageTest extends TestCase
             ],
             [
                 372500,
-                $this->database2(),
+                self::database2(),
                 'Sales',
                 [
                     ['Quarter', 'Area'],
                     ['1', 'South'],
                 ],
             ],
-            [
+            'numeric column, in this case referring to age' => [
+                13,
+                self::database1(),
+                3,
+                self::database1(),
+            ],
+            'null field' => [
+                ExcelError::VALUE(),
+                self::database1(),
                 null,
-                $this->database1(),
-                null,
-                $this->database1(),
+                self::database1(),
+            ],
+            'field unknown column' => [
+                ExcelError::VALUE(),
+                self::database1(),
+                'xyz',
+                self::database1(),
+            ],
+            'multiple criteria, omit equal sign' => [
+                10.5,
+                self::database1(),
+                'Yield',
+                [
+                    ['Tree', 'Height'],
+                    ['=Apple', '>10'],
+                    ['Pear'],
+                ],
+            ],
+            'multiple criteria for same field' => [
+                10,
+                self::database1(),
+                'Yield',
+                [
+                    ['Tree', 'Height', 'Age', 'Height'],
+                    ['=Apple', '>10', null, '<16'],
+                ],
+            ],
+            /* Excel seems to return #NAME? when column number
+               is too high or too low. This makes so little sense
+               to me that I'm not going to bother coding that up,
+               content to return #VALUE! as an invalid name would */
+            'field column number too high' => [
+                ExcelError::VALUE(),
+                self::database1(),
+                99,
+                self::database1(),
+            ],
+            'field column number too low' => [
+                ExcelError::VALUE(),
+                self::database1(),
+                0,
+                self::database1(),
             ],
         ];
     }

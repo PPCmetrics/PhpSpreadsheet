@@ -5,6 +5,7 @@ namespace PhpOffice\PhpSpreadsheetTests\Calculation\Functions\Statistical;
 use PhpOffice\PhpSpreadsheet\Calculation\Statistical;
 use PHPUnit\Framework\TestCase;
 
+// TODO Convert to Spreadsheet context.
 class ChiTestTest extends TestCase
 {
     /**
@@ -20,7 +21,7 @@ class ChiTestTest extends TestCase
         self::assertEqualsWithDelta($expectedResult, $result, 1E-12);
     }
 
-    public function providerCHITEST(): array
+    public static function providerCHITEST(): array
     {
         return require 'tests/data/Calculation/Statistical/CHITEST.php';
     }

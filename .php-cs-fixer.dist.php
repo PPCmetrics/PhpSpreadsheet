@@ -2,6 +2,7 @@
 
 $finder = PhpCsFixer\Finder::create()
     ->exclude('vendor')
+    ->notPath('src/PhpSpreadsheet/Writer/ZipStream3.php')
     ->in(__DIR__);
 
 $config = new PhpCsFixer\Config();
@@ -58,7 +59,7 @@ $config
         'general_phpdoc_annotation_remove' => ['annotations' => ['access', 'category', 'copyright']],
         'global_namespace_import' => true,
         'header_comment' => false, // We don't use common header in all our files
-        'heredoc_indentation' => false, // Requires PHP >= 7.3
+        'heredoc_indentation' => true,
         'heredoc_to_nowdoc' => false, // Not sure about this one
         'implode_call' => true,
         'include' => true,
@@ -133,6 +134,7 @@ $config
         'not_operator_with_successor_space' => false, // idem
         'nullable_type_declaration_for_default_null_value' => true,
         'object_operator_without_whitespace' => true,
+        'octal_notation' => true,
         'ordered_class_elements' => false, // We prefer to keep some freedom
         'ordered_imports' => true,
         'ordered_interfaces' => true,

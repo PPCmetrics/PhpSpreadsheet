@@ -10,7 +10,7 @@ class Erf
 {
     use ArrayEnabled;
 
-    private static $twoSqrtPi = 1.128379167095512574;
+    private const TWO_SQRT_PI = 1.128379167095512574;
 
     /**
      * ERF.
@@ -77,13 +77,24 @@ class Erf
         return self::ERF($limit);
     }
 
-    //
-    //    Private method to calculate the erf value
-    //
+    /** @param mixed $value */
+    private static function makeFloat($value): float
+    {
+        return is_numeric($value) ? ((float) $value) : 0.0;
+    }
+
+    /**
+     * Method to calculate the erf value.
+     *
+     * @param float|int|string $value
+     *
+     * @return float
+     */
     public static function erfValue($value)
     {
+        $value = (float) $value;
         if (abs($value) > 2.2) {
-            return 1 - ErfC::ERFC($value);
+            return 1 - self::makeFloat(ErfC::ERFC($value));
         }
         $sum = $term = $value;
         $xsqr = ($value * $value);
@@ -100,6 +111,6 @@ class Erf
             }
         } while (abs($term / $sum) > Functions::PRECISION);
 
-        return self::$twoSqrtPi * $sum;
+        return self::TWO_SQRT_PI * $sum;
     }
 }

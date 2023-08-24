@@ -3,27 +3,20 @@
 namespace PhpOffice\PhpSpreadsheetTests\Calculation\Functions\Statistical;
 
 use PhpOffice\PhpSpreadsheet\Calculation\Calculation;
-use PhpOffice\PhpSpreadsheet\Calculation\Statistical;
-use PHPUnit\Framework\TestCase;
 
-class WeibullTest extends TestCase
+class WeibullTest extends AllSetupTeardown
 {
     /**
      * @dataProvider providerWEIBULL
      *
      * @param mixed $expectedResult
-     * @param mixed $value
-     * @param mixed $alpha
-     * @param mixed $beta
-     * @param mixed $cumulative
      */
-    public function testWEIBULL($expectedResult, $value, $alpha, $beta, $cumulative): void
+    public function testWEIBULL($expectedResult, ...$args): void
     {
-        $result = Statistical::WEIBULL($value, $alpha, $beta, $cumulative);
-        self::assertEqualsWithDelta($expectedResult, $result, 1E-12);
+        $this->runTestCases('WEIBULL', $expectedResult, ...$args);
     }
 
-    public function providerWEIBULL(): array
+    public static function providerWEIBULL(): array
     {
         return require 'tests/data/Calculation/Statistical/WEIBULL.php';
     }
@@ -40,7 +33,7 @@ class WeibullTest extends TestCase
         self::assertEqualsWithDelta($expectedResult, $result, 1.0e-14);
     }
 
-    public function providerWeibullArray(): array
+    public static function providerWeibullArray(): array
     {
         return [
             'row/column vectors' => [

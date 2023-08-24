@@ -3,14 +3,14 @@
 namespace PhpOffice\PhpSpreadsheetTests\Calculation\Functions\Information;
 
 use PhpOffice\PhpSpreadsheet\Calculation\Calculation;
-use PhpOffice\PhpSpreadsheet\Calculation\Functions;
+use PhpOffice\PhpSpreadsheet\Calculation\Information\Value;
 use PHPUnit\Framework\TestCase;
 
 class IsNonTextTest extends TestCase
 {
     public function testIsNonTextNoArgument(): void
     {
-        $result = Functions::isNonText();
+        $result = Value::isNonText();
         self::assertTrue($result);
     }
 
@@ -21,11 +21,11 @@ class IsNonTextTest extends TestCase
      */
     public function testIsNonText(bool $expectedResult, $value): void
     {
-        $result = Functions::isNonText($value);
+        $result = Value::isNonText($value);
         self::assertEquals($expectedResult, $result);
     }
 
-    public function providerIsNonText(): array
+    public static function providerIsNonText(): array
     {
         return require 'tests/data/Calculation/Information/IS_NONTEXT.php';
     }
@@ -42,7 +42,7 @@ class IsNonTextTest extends TestCase
         self::assertEquals($expectedResult, $result);
     }
 
-    public function providerIsNonTextArray(): array
+    public static function providerIsNonTextArray(): array
     {
         return [
             'vector' => [

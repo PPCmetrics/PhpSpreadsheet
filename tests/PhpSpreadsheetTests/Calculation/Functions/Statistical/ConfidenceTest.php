@@ -3,17 +3,9 @@
 namespace PhpOffice\PhpSpreadsheetTests\Calculation\Functions\Statistical;
 
 use PhpOffice\PhpSpreadsheet\Calculation\Calculation;
-use PhpOffice\PhpSpreadsheet\Calculation\Functions;
-use PhpOffice\PhpSpreadsheet\Calculation\Statistical;
-use PHPUnit\Framework\TestCase;
 
-class ConfidenceTest extends TestCase
+class ConfidenceTest extends AllSetupTeardown
 {
-    protected function setUp(): void
-    {
-        Functions::setCompatibilityMode(Functions::COMPATIBILITY_EXCEL);
-    }
-
     /**
      * @dataProvider providerCONFIDENCE
      *
@@ -21,11 +13,10 @@ class ConfidenceTest extends TestCase
      */
     public function testCONFIDENCE($expectedResult, ...$args): void
     {
-        $result = Statistical::CONFIDENCE(...$args);
-        self::assertEqualsWithDelta($expectedResult, $result, 1E-12);
+        $this->runTestCaseReference('CONFIDENCE', $expectedResult, ...$args);
     }
 
-    public function providerCONFIDENCE(): array
+    public static function providerCONFIDENCE(): array
     {
         return require 'tests/data/Calculation/Statistical/CONFIDENCE.php';
     }
@@ -42,7 +33,7 @@ class ConfidenceTest extends TestCase
         self::assertEqualsWithDelta($expectedResult, $result, 1.0e-14);
     }
 
-    public function providerConfidenceArray(): array
+    public static function providerConfidenceArray(): array
     {
         return [
             'row/column vectors' => [

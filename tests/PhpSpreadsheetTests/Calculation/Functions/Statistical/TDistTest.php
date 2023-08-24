@@ -3,10 +3,8 @@
 namespace PhpOffice\PhpSpreadsheetTests\Calculation\Functions\Statistical;
 
 use PhpOffice\PhpSpreadsheet\Calculation\Calculation;
-use PhpOffice\PhpSpreadsheet\Calculation\Statistical;
-use PHPUnit\Framework\TestCase;
 
-class TDistTest extends TestCase
+class TDistTest extends AllSetupTeardown
 {
     /**
      * @dataProvider providerTDIST
@@ -18,11 +16,10 @@ class TDistTest extends TestCase
      */
     public function testTDIST($expectedResult, $value, $degrees, $tails): void
     {
-        $result = Statistical::TDIST($value, $degrees, $tails);
-        self::assertEqualsWithDelta($expectedResult, $result, 1E-12);
+        $this->runTestCaseReference('TDIST', $expectedResult, $value, $degrees, $tails);
     }
 
-    public function providerTDIST(): array
+    public static function providerTDIST(): array
     {
         return require 'tests/data/Calculation/Statistical/TDIST.php';
     }
@@ -39,7 +36,7 @@ class TDistTest extends TestCase
         self::assertEqualsWithDelta($expectedResult, $result, 1.0e-14);
     }
 
-    public function providerTDistArray(): array
+    public static function providerTDistArray(): array
     {
         return [
             'row/column vectors' => [

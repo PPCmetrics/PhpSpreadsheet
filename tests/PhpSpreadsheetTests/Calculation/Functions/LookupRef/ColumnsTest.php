@@ -16,11 +16,11 @@ class ColumnsTest extends TestCase
      */
     public function testCOLUMNS($expectedResult, $arg): void
     {
-        $result = LookupRef::COLUMNS($arg);
+        $result = LookupRef\RowColumnInformation::COLUMNS($arg);
         self::assertEquals($expectedResult, $result);
     }
 
-    public function providerCOLUMNS(): array
+    public static function providerCOLUMNS(): array
     {
         return require 'tests/data/Calculation/LookupRef/COLUMNS.php';
     }
@@ -37,7 +37,7 @@ class ColumnsTest extends TestCase
         self::assertEquals($expectedResult, $result);
     }
 
-    public function providerColumnsArray(): array
+    public static function providerColumnsArray(): array
     {
         return [
             [

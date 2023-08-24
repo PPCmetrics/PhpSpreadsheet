@@ -3,14 +3,17 @@
 namespace PhpOffice\PhpSpreadsheetTests\Calculation\Functions\Engineering;
 
 use PhpOffice\PhpSpreadsheet\Calculation\Calculation;
-use PhpOffice\PhpSpreadsheet\Calculation\Engineering;
+use PhpOffice\PhpSpreadsheet\Calculation\Engineering\ComplexFunctions;
+use PhpOffice\PhpSpreadsheet\Calculation\Exception as CalculationException;
 use PhpOffice\PhpSpreadsheet\Calculation\Functions;
+use PhpOffice\PhpSpreadsheet\Spreadsheet;
+use PhpOffice\PhpSpreadsheetTests\Calculation\Functions\FormulaArguments;
 use PhpOffice\PhpSpreadsheetTests\Custom\ComplexAssert;
 use PHPUnit\Framework\TestCase;
 
 class ImCscTest extends TestCase
 {
-    const COMPLEX_PRECISION = 1E-8;
+    const COMPLEX_PRECISION = 1E-12;
 
     /**
      * @var ComplexAssert
@@ -27,20 +30,97 @@ class ImCscTest extends TestCase
      * @dataProvider providerIMCSC
      *
      * @param mixed $expectedResult
-     * @param mixed $value
      */
-    public function testIMCSC($expectedResult, $value): void
+    public function testDirectCallToIMCSC($expectedResult, ...$args): void
     {
-        $result = Engineering::IMCSC($value);
+        /** @scrutinizer ignore-call */
+        $result = ComplexFunctions::IMCSC(...$args);
         self::assertTrue(
             $this->complexAssert->assertComplexEquals($expectedResult, $result, self::COMPLEX_PRECISION),
             $this->complexAssert->getErrorMessage()
         );
     }
 
-    public function providerIMCSC(): array
+    private function trimIfQuoted(string $value): string
+    {
+        return trim($value, '"');
+    }
+
+    /**
+     * @dataProvider providerIMCSC
+     *
+     * @param mixed $expectedResult
+     */
+    public function testIMCSCAsFormula($expectedResult, ...$args): void
+    {
+        $arguments = new FormulaArguments(...$args);
+
+        $calculation = Calculation::getInstance();
+        $formula = "=IMCSC({$arguments})";
+
+        $result = $calculation->_calculateFormulaValue($formula);
+        self::assertTrue(
+            $this->complexAssert->assertComplexEquals($expectedResult, $this->trimIfQuoted((string) $result), self::COMPLEX_PRECISION),
+            $this->complexAssert->getErrorMessage()
+        );
+    }
+
+    /**
+     * @dataProvider providerIMCSC
+     *
+     * @param mixed $expectedResult
+     */
+    public function testIMCSCInWorksheet($expectedResult, ...$args): void
+    {
+        $arguments = new FormulaArguments(...$args);
+
+        $spreadsheet = new Spreadsheet();
+        $worksheet = $spreadsheet->getActiveSheet();
+        $argumentCells = $arguments->populateWorksheet($worksheet);
+        $formula = "=IMCSC({$argumentCells})";
+
+        $result = $worksheet->setCellValue('A1', $formula)
+            ->getCell('A1')
+            ->getCalculatedValue();
+        self::assertTrue(
+            $this->complexAssert->assertComplexEquals($expectedResult, $result, self::COMPLEX_PRECISION),
+            $this->complexAssert->getErrorMessage()
+        );
+
+        $spreadsheet->disconnectWorksheets();
+    }
+
+    public static function providerIMCSC(): array
     {
         return require 'tests/data/Calculation/Engineering/IMCSC.php';
+    }
+
+    /**
+     * @dataProvider providerUnhappyIMCSC
+     */
+    public function testIMCSCUnhappyPath(string $expectedException, ...$args): void
+    {
+        $arguments = new FormulaArguments(...$args);
+
+        $spreadsheet = new Spreadsheet();
+        $worksheet = $spreadsheet->getActiveSheet();
+        $argumentCells = $arguments->populateWorksheet($worksheet);
+        $formula = "=IMCSC({$argumentCells})";
+
+        $this->expectException(CalculationException::class);
+        $this->expectExceptionMessage($expectedException);
+        $worksheet->setCellValue('A1', $formula)
+            ->getCell('A1')
+            ->getCalculatedValue();
+
+        $spreadsheet->disconnectWorksheets();
+    }
+
+    public static function providerUnhappyIMCSC(): array
+    {
+        return [
+            ['Formula Error: Wrong number of arguments for IMCSC() function'],
+        ];
     }
 
     /**
@@ -67,7 +147,7 @@ class ImCscTest extends TestCase
         self::assertEquals($expectedResult, $result);
     }
 
-    public function providerImCscArray(): array
+    public static function providerImCscArray(): array
     {
         return [
             'row/column vector' => [

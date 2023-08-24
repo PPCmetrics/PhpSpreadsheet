@@ -2,17 +2,8 @@
 
 namespace PhpOffice\PhpSpreadsheetTests\Calculation\Functions\Statistical;
 
-use PhpOffice\PhpSpreadsheet\Calculation\Functions;
-use PhpOffice\PhpSpreadsheet\Calculation\Statistical;
-use PHPUnit\Framework\TestCase;
-
-class TrimMeanTest extends TestCase
+class TrimMeanTest extends AllSetupTeardown
 {
-    protected function setUp(): void
-    {
-        Functions::setCompatibilityMode(Functions::COMPATIBILITY_EXCEL);
-    }
-
     /**
      * @dataProvider providerTRIMMEAN
      *
@@ -21,11 +12,10 @@ class TrimMeanTest extends TestCase
      */
     public function testTRIMMEAN($expectedResult, array $args, $percentage): void
     {
-        $result = Statistical::TRIMMEAN($args, $percentage);
-        self::assertEqualsWithDelta($expectedResult, $result, 1E-12);
+        $this->runTestCaseReference('TRIMMEAN', $expectedResult, $args, $percentage);
     }
 
-    public function providerTRIMMEAN(): array
+    public static function providerTRIMMEAN(): array
     {
         return require 'tests/data/Calculation/Statistical/TRIMMEAN.php';
     }

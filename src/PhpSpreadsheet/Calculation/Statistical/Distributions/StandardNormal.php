@@ -146,6 +146,14 @@ class StandardNormal
         }
         $n = count($dataSet);
 
-        return 1 - self::cumulative((Averages::average($dataSet) - $m0) / ($sigma / sqrt($n)));
+        $sub1 = Averages::average($dataSet);
+
+        if (!is_numeric($sub1)) {
+            return $sub1;
+        }
+
+        $temp = self::cumulative(($sub1 - $m0) / ($sigma / sqrt($n)));
+
+        return 1 - (is_numeric($temp) ? $temp : 0);
     }
 }

@@ -3,15 +3,15 @@
 namespace PhpOffice\PhpSpreadsheetTests\Calculation\Functions\Information;
 
 use PhpOffice\PhpSpreadsheet\Calculation\Calculation;
-use PhpOffice\PhpSpreadsheet\Calculation\Functions;
 use PhpOffice\PhpSpreadsheet\Calculation\Information\ExcelError;
+use PhpOffice\PhpSpreadsheet\Calculation\Information\Value;
 use PHPUnit\Framework\TestCase;
 
 class IsEvenTest extends TestCase
 {
     public function testIsEvenNoArgument(): void
     {
-        $result = Functions::isEven();
+        $result = Value::isEven();
         self::assertSame(ExcelError::NAME(), $result);
     }
 
@@ -23,11 +23,11 @@ class IsEvenTest extends TestCase
      */
     public function testIsEven($expectedResult, $value): void
     {
-        $result = Functions::isEven($value);
+        $result = Value::isEven($value);
         self::assertEquals($expectedResult, $result);
     }
 
-    public function providerIsEven(): array
+    public static function providerIsEven(): array
     {
         return require 'tests/data/Calculation/Information/IS_EVEN.php';
     }
@@ -44,7 +44,7 @@ class IsEvenTest extends TestCase
         self::assertEquals($expectedResult, $result);
     }
 
-    public function providerIsEvenArray(): array
+    public static function providerIsEvenArray(): array
     {
         return [
             'vector' => [

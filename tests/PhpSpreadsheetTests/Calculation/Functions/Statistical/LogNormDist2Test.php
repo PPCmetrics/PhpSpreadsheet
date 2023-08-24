@@ -3,10 +3,8 @@
 namespace PhpOffice\PhpSpreadsheetTests\Calculation\Functions\Statistical;
 
 use PhpOffice\PhpSpreadsheet\Calculation\Calculation;
-use PhpOffice\PhpSpreadsheet\Calculation\Statistical;
-use PHPUnit\Framework\TestCase;
 
-class LogNormDist2Test extends TestCase
+class LogNormDist2Test extends AllSetupTeardown
 {
     /**
      * @dataProvider providerLOGNORMDIST2
@@ -15,11 +13,10 @@ class LogNormDist2Test extends TestCase
      */
     public function testLOGNORMDIST2($expectedResult, ...$args): void
     {
-        $result = Statistical::LOGNORMDIST2(...$args);
-        self::assertEqualsWithDelta($expectedResult, $result, 1E-12);
+        $this->runTestCases('LOGNORM.DIST', $expectedResult, ...$args);
     }
 
-    public function providerLOGNORMDIST2(): array
+    public static function providerLOGNORMDIST2(): array
     {
         return require 'tests/data/Calculation/Statistical/LOGNORMDIST2.php';
     }
@@ -36,7 +33,7 @@ class LogNormDist2Test extends TestCase
         self::assertEqualsWithDelta($expectedResult, $result, 1.0e-14);
     }
 
-    public function providerLogNormDist2Array(): array
+    public static function providerLogNormDist2Array(): array
     {
         return [
             'row/column vectors' => [

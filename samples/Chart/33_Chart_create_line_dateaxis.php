@@ -4,7 +4,6 @@ namespace PhpOffice\PhpSpreadsheet\Chart;
 
 use DateTime;
 use PhpOffice\PhpSpreadsheet\Chart\Legend as ChartLegend;
-use PhpOffice\PhpSpreadsheet\IOFactory;
 use PhpOffice\PhpSpreadsheet\Shared\Date as SharedDate;
 use PhpOffice\PhpSpreadsheet\Spreadsheet;
 
@@ -330,15 +329,13 @@ $chart->setRoundedCorners(true); // Rounded corners in Chart Outline
 
 // Add the chart to the worksheet $chartSheet
 $chartSheet->addChart($chart);
+
+$helper->renderChart($chart, __FILE__);
+
 $spreadsheet->setActiveSheetIndex(1);
 
 // Save Excel 2007 file
-$filename = $helper->getFilename(__FILE__);
-$writer = IOFactory::createWriter($spreadsheet, 'Xlsx');
-$writer->setIncludeCharts(true);
-$callStartTime = microtime(true);
-$writer->save($filename);
-$helper->logWrite($writer, $filename, $callStartTime);
+$helper->write($spreadsheet, __FILE__, ['Xlsx'], true);
 $spreadsheet->disconnectWorksheets();
 
 function dateRange(int $nrows, Spreadsheet $wrkbk): array
@@ -358,7 +355,7 @@ function dateRange(int $nrows, Spreadsheet $wrkbk): array
     $ExcelQtrStartDateVal = SharedDate::convertIsoDate($qtrStartStr);
 
     // end the xaxis at the end of the quarter of the last date
-    $lastDateStr = $dataSheet->getCellByColumnAndRow(2, $nrows + 1)->getValue();
+    $lastDateStr = $dataSheet->getCell([2, $nrows + 1])->getValue();
     $lastDate = DateTime::createFromFormat('Y-m-d', $lastDateStr);
     $lastMonth = (int) $lastDate->format('n');
     $lastYr = (int) $lastDate->format('Y');

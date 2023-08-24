@@ -11,8 +11,6 @@ class ChiSquared
 {
     use ArrayEnabled;
 
-    private const MAX_ITERATIONS = 256;
-
     private const EPS = 2.22e-16;
 
     /**
@@ -98,7 +96,9 @@ class ChiSquared
         }
 
         if ($cumulative === true) {
-            return 1 - self::distributionRightTail($value, $degrees);
+            $temp = self::distributionRightTail($value, $degrees);
+
+            return 1 - (is_numeric($temp) ? $temp : 0);
         }
 
         return ($value ** (($degrees / 2) - 1) * exp(-$value / 2)) /
@@ -197,7 +197,7 @@ class ChiSquared
         $rows = count($actual);
         $actual = Functions::flattenArray($actual);
         $expected = Functions::flattenArray($expected);
-        $columns = count($actual) / $rows;
+        $columns = intdiv(count($actual), $rows);
 
         $countActuals = count($actual);
         $countExpected = count($expected);
@@ -261,12 +261,12 @@ class ChiSquared
         return $chi2;
     }
 
-    private static function pchisq($chi2, $degrees)
+    private static function pchisq(float $chi2, int $degrees): float
     {
         return self::gammp($degrees, 0.5 * $chi2);
     }
 
-    private static function gammp($n, $x)
+    private static function gammp(int $n, float $x): float
     {
         if ($x < 0.5 * $n + 1) {
             return self::gser($n, $x);
@@ -279,7 +279,7 @@ class ChiSquared
     // series representation. Algorithm from numerical recipe.
     // Assume that n is a positive integer and x>0, won't check arguments.
     // Relative error controlled by the eps parameter
-    private static function gser($n, $x)
+    private static function gser(int $n, float $x): float
     {
         /** @var float */
         $gln = Gamma::ln($n / 2);
@@ -303,7 +303,7 @@ class ChiSquared
     // its continued fraction representation. Algorithm from numerical recipe.
     // Assume that n is a postive integer and x>0, won't check arguments.
     // Relative error controlled by the eps parameter
-    private static function gcf($n, $x)
+    private static function gcf(int $n, float $x): float
     {
         /** @var float */
         $gln = Gamma::ln($n / 2);

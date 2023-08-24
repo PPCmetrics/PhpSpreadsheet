@@ -3,14 +3,14 @@
 namespace PhpOffice\PhpSpreadsheetTests\Calculation\Functions\Information;
 
 use PhpOffice\PhpSpreadsheet\Calculation\Calculation;
-use PhpOffice\PhpSpreadsheet\Calculation\Functions;
+use PhpOffice\PhpSpreadsheet\Calculation\Information\Value;
 use PHPUnit\Framework\TestCase;
 
 class IsBlankTest extends TestCase
 {
     public function testIsBlankNoArgument(): void
     {
-        $result = Functions::isBlank();
+        $result = Value::isBlank();
         self::assertTrue($result);
     }
 
@@ -21,11 +21,11 @@ class IsBlankTest extends TestCase
      */
     public function testIsBlank(bool $expectedResult, $value): void
     {
-        $result = Functions::isBlank($value);
+        $result = Value::isBlank($value);
         self::assertEquals($expectedResult, $result);
     }
 
-    public function providerIsBlank(): array
+    public static function providerIsBlank(): array
     {
         return require 'tests/data/Calculation/Information/IS_BLANK.php';
     }
@@ -42,7 +42,7 @@ class IsBlankTest extends TestCase
         self::assertEquals($expectedResult, $result);
     }
 
-    public function providerIsBlankArray(): array
+    public static function providerIsBlankArray(): array
     {
         return [
             'vector' => [

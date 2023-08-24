@@ -3,17 +3,9 @@
 namespace PhpOffice\PhpSpreadsheetTests\Calculation\Functions\Statistical;
 
 use PhpOffice\PhpSpreadsheet\Calculation\Calculation;
-use PhpOffice\PhpSpreadsheet\Calculation\Functions;
-use PhpOffice\PhpSpreadsheet\Calculation\Statistical;
-use PHPUnit\Framework\TestCase;
 
-class ExponDistTest extends TestCase
+class ExponDistTest extends AllSetupTeardown
 {
-    protected function setUp(): void
-    {
-        Functions::setCompatibilityMode(Functions::COMPATIBILITY_EXCEL);
-    }
-
     /**
      * @dataProvider providerEXPONDIST
      *
@@ -21,11 +13,10 @@ class ExponDistTest extends TestCase
      */
     public function testEXPONDIST($expectedResult, ...$args): void
     {
-        $result = Statistical::EXPONDIST(...$args);
-        self::assertEqualsWithDelta($expectedResult, $result, 1E-12);
+        $this->runTestCases('EXPONDIST', $expectedResult, ...$args);
     }
 
-    public function providerEXPONDIST(): array
+    public static function providerEXPONDIST(): array
     {
         return require 'tests/data/Calculation/Statistical/EXPONDIST.php';
     }
@@ -42,7 +33,7 @@ class ExponDistTest extends TestCase
         self::assertEqualsWithDelta($expectedResult, $result, 1.0e-14);
     }
 
-    public function providerExponDistArray(): array
+    public static function providerExponDistArray(): array
     {
         return [
             'row/column vectors' => [

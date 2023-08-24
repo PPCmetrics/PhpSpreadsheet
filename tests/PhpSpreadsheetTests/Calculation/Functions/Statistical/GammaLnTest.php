@@ -3,30 +3,20 @@
 namespace PhpOffice\PhpSpreadsheetTests\Calculation\Functions\Statistical;
 
 use PhpOffice\PhpSpreadsheet\Calculation\Calculation;
-use PhpOffice\PhpSpreadsheet\Calculation\Functions;
-use PhpOffice\PhpSpreadsheet\Calculation\Statistical;
-use PHPUnit\Framework\TestCase;
 
-class GammaLnTest extends TestCase
+class GammaLnTest extends AllSetupTeardown
 {
-    protected function setUp(): void
-    {
-        Functions::setCompatibilityMode(Functions::COMPATIBILITY_EXCEL);
-    }
-
     /**
      * @dataProvider providerGAMMALN
      *
      * @param mixed $expectedResult
-     * @param mixed $value
      */
-    public function testGAMMALN($expectedResult, $value): void
+    public function testGAMMALN($expectedResult, ...$args): void
     {
-        $result = Statistical::GAMMALN($value);
-        self::assertEqualsWithDelta($expectedResult, $result, 1E-12);
+        $this->runTestCases('GAMMALN', $expectedResult, ...$args);
     }
 
-    public function providerGAMMALN(): array
+    public static function providerGAMMALN(): array
     {
         return require 'tests/data/Calculation/Statistical/GAMMALN.php';
     }
@@ -43,7 +33,7 @@ class GammaLnTest extends TestCase
         self::assertEqualsWithDelta($expectedResult, $result, 1.0e-14);
     }
 
-    public function providerGammaLnArray(): array
+    public static function providerGammaLnArray(): array
     {
         return [
             'matrix' => [

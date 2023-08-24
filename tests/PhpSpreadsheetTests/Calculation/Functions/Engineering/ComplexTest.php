@@ -3,7 +3,9 @@
 namespace PhpOffice\PhpSpreadsheetTests\Calculation\Functions\Engineering;
 
 use PhpOffice\PhpSpreadsheet\Calculation\Calculation;
-use PhpOffice\PhpSpreadsheet\Calculation\Engineering;
+use PhpOffice\PhpSpreadsheet\Calculation\Engineering\Complex;
+use PhpOffice\PhpSpreadsheet\Spreadsheet;
+use PhpOffice\PhpSpreadsheetTests\Calculation\Functions\FormulaArguments;
 use PHPUnit\Framework\TestCase;
 
 class ComplexTest extends TestCase
@@ -13,21 +15,57 @@ class ComplexTest extends TestCase
      *
      * @param mixed $expectedResult
      */
-    public function testCOMPLEX($expectedResult, ...$args): void
+    public function testDirectCallToCOMPLEX($expectedResult, ...$args): void
     {
-        if (count($args) === 0) {
-            $result = Engineering::COMPLEX();
-        } elseif (count($args) === 1) {
-            $result = Engineering::COMPLEX($args[0]);
-        } elseif (count($args) === 2) {
-            $result = Engineering::COMPLEX($args[0], $args[1]);
-        } else {
-            $result = Engineering::COMPLEX($args[0], $args[1], $args[2]);
-        }
-        self::assertEquals($expectedResult, $result);
+        /** @scrutinizer ignore-call */
+        $result = Complex::complex(...$args);
+        self::assertSame($expectedResult, $result);
     }
 
-    public function providerCOMPLEX(): array
+    private function trimIfQuoted(string $value): string
+    {
+        return trim($value, '"');
+    }
+
+    /**
+     * @dataProvider providerCOMPLEX
+     *
+     * @param mixed $expectedResult
+     */
+    public function testCOMPLEXAsFormula($expectedResult, ...$args): void
+    {
+        $arguments = new FormulaArguments(...$args);
+
+        $calculation = Calculation::getInstance();
+        $formula = "=COMPLEX({$arguments})";
+
+        $result = $calculation->_calculateFormulaValue($formula);
+        self::assertSame($expectedResult, $this->trimIfQuoted((string) $result));
+    }
+
+    /**
+     * @dataProvider providerCOMPLEX
+     *
+     * @param mixed $expectedResult
+     */
+    public function testCOMPLEXInWorksheet($expectedResult, ...$args): void
+    {
+        $arguments = new FormulaArguments(...$args);
+
+        $spreadsheet = new Spreadsheet();
+        $worksheet = $spreadsheet->getActiveSheet();
+        $argumentCells = $arguments->populateWorksheet($worksheet);
+        $formula = "=COMPLEX({$argumentCells})";
+
+        $result = $worksheet->setCellValue('A1', $formula)
+            ->getCell('A1')
+            ->getCalculatedValue();
+        self::assertSame($expectedResult, $result);
+
+        $spreadsheet->disconnectWorksheets();
+    }
+
+    public static function providerCOMPLEX(): array
     {
         return require 'tests/data/Calculation/Engineering/COMPLEX.php';
     }
@@ -44,7 +82,7 @@ class ComplexTest extends TestCase
         self::assertEquals($expectedResult, $result);
     }
 
-    public function providerComplexArray(): array
+    public static function providerComplexArray(): array
     {
         return [
             'row/column vector' => [

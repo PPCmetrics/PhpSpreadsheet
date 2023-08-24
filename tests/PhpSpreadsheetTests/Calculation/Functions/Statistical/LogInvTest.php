@@ -3,10 +3,8 @@
 namespace PhpOffice\PhpSpreadsheetTests\Calculation\Functions\Statistical;
 
 use PhpOffice\PhpSpreadsheet\Calculation\Calculation;
-use PhpOffice\PhpSpreadsheet\Calculation\Statistical;
-use PHPUnit\Framework\TestCase;
 
-class LogInvTest extends TestCase
+class LogInvTest extends AllSetupTeardown
 {
     /**
      * @dataProvider providerLOGINV
@@ -15,11 +13,10 @@ class LogInvTest extends TestCase
      */
     public function testLOGINV($expectedResult, ...$args): void
     {
-        $result = Statistical::LOGINV(...$args);
-        self::assertEqualsWithDelta($expectedResult, $result, 1E-12);
+        $this->runTestCases('LOGINV', $expectedResult, ...$args);
     }
 
-    public function providerLOGINV(): array
+    public static function providerLOGINV(): array
     {
         return require 'tests/data/Calculation/Statistical/LOGINV.php';
     }
@@ -36,7 +33,7 @@ class LogInvTest extends TestCase
         self::assertEqualsWithDelta($expectedResult, $result, 1.0e-14);
     }
 
-    public function providerLogInvArray(): array
+    public static function providerLogInvArray(): array
     {
         return [
             'row/column vectors' => [

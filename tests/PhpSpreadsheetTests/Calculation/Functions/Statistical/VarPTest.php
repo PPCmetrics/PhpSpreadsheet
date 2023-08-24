@@ -2,30 +2,19 @@
 
 namespace PhpOffice\PhpSpreadsheetTests\Calculation\Functions\Statistical;
 
-use PhpOffice\PhpSpreadsheet\Calculation\Functions;
-use PhpOffice\PhpSpreadsheet\Calculation\Statistical;
-use PHPUnit\Framework\TestCase;
-
-class VarPTest extends TestCase
+class VarPTest extends AllSetupTeardown
 {
-    protected function tearDown(): void
-    {
-        Functions::setCompatibilityMode(Functions::COMPATIBILITY_EXCEL);
-    }
-
     /**
      * @dataProvider providerVARP
      *
      * @param mixed $expectedResult
-     * @param mixed $values
      */
-    public function testVARP($expectedResult, $values): void
+    public function testVARP($expectedResult, ...$args): void
     {
-        $result = Statistical::VARP($values);
-        self::assertEqualsWithDelta($expectedResult, $result, 1E-12);
+        $this->runTestCases('VARP', $expectedResult, ...$args);
     }
 
-    public function providerVARP(): array
+    public static function providerVARP(): array
     {
         return require 'tests/data/Calculation/Statistical/VARP.php';
     }
@@ -34,17 +23,14 @@ class VarPTest extends TestCase
      * @dataProvider providerOdsVARP
      *
      * @param mixed $expectedResult
-     * @param mixed $values
      */
-    public function testOdsVARP($expectedResult, $values): void
+    public function testOdsVARP($expectedResult, ...$args): void
     {
-        Functions::setCompatibilityMode(Functions::COMPATIBILITY_OPENOFFICE);
-
-        $result = Statistical::VARP($values);
-        self::assertEqualsWithDelta($expectedResult, $result, 1E-12);
+        $this->setOpenOffice();
+        $this->runTestCases('VARP', $expectedResult, ...$args);
     }
 
-    public function providerOdsVARP(): array
+    public static function providerOdsVARP(): array
     {
         return require 'tests/data/Calculation/Statistical/VARP_ODS.php';
     }

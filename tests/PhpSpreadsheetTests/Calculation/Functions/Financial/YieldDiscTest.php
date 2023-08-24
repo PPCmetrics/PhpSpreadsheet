@@ -2,17 +2,8 @@
 
 namespace PhpOffice\PhpSpreadsheetTests\Calculation\Functions\Financial;
 
-use PhpOffice\PhpSpreadsheet\Calculation\Financial;
-use PhpOffice\PhpSpreadsheet\Calculation\Functions;
-use PHPUnit\Framework\TestCase;
-
-class YieldDiscTest extends TestCase
+class YieldDiscTest extends AllSetupTeardown
 {
-    protected function setUp(): void
-    {
-        Functions::setCompatibilityMode(Functions::COMPATIBILITY_EXCEL);
-    }
-
     /**
      * @dataProvider providerYIELDDISC
      *
@@ -20,11 +11,10 @@ class YieldDiscTest extends TestCase
      */
     public function testYIELDDISC($expectedResult, ...$args): void
     {
-        $result = Financial::YIELDDISC(...$args);
-        self::assertEqualsWithDelta($expectedResult, $result, 1E-8);
+        $this->runTestCase('YIELDDISC', $expectedResult, $args);
     }
 
-    public function providerYIELDDISC(): array
+    public static function providerYIELDDISC(): array
     {
         return require 'tests/data/Calculation/Financial/YIELDDISC.php';
     }

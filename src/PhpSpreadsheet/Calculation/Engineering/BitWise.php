@@ -4,7 +4,6 @@ namespace PhpOffice\PhpSpreadsheet\Calculation\Engineering;
 
 use PhpOffice\PhpSpreadsheet\Calculation\ArrayEnabled;
 use PhpOffice\PhpSpreadsheet\Calculation\Exception;
-use PhpOffice\PhpSpreadsheet\Calculation\Functions;
 use PhpOffice\PhpSpreadsheet\Calculation\Information\ExcelError;
 
 class BitWise
@@ -17,10 +16,12 @@ class BitWise
      * Split a number into upper and lower portions for full 32-bit support.
      *
      * @param float|int $number
+     *
+     * @return int[]
      */
     private static function splitNumber($number): array
     {
-        return [floor($number / self::SPLIT_DIVISOR), fmod($number, self::SPLIT_DIVISOR)];
+        return [(int) floor($number / self::SPLIT_DIVISOR), (int) fmod($number, self::SPLIT_DIVISOR)];
     }
 
     /**
