@@ -48,6 +48,10 @@ class Conditional
      */
     public static function statementIf($condition = true, $returnIfTrue = 0, $returnIfFalse = false)
     {
+        if (is_array($condition)) {//PPCMetrics
+            return self::evaluateArrayArguments([self::class, __FUNCTION__], $condition, $returnIfTrue, $returnIfFalse); //PPCMetrics
+        } //PPCMetrics
+
         $condition = ($condition === null) ? true : Functions::flattenSingleValue($condition);
 
         if (ErrorValue::isError($condition)) {

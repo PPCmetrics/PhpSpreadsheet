@@ -22,6 +22,8 @@ abstract class Coordinate
      */
     const DEFAULT_RANGE = 'A1:A1';
 
+    public static ?int $highest_row_limit = null;
+
     /**
      * Convert string coordinate to [0 => int column index, 1 => int row index].
      *
@@ -32,7 +34,11 @@ abstract class Coordinate
     public static function coordinateFromString($cellAddress): array
     {
         if (preg_match(self::A1_COORDINATE_REGEX, $cellAddress, $matches)) {
-            return [$matches['col'], $matches['row']];
+            if (static::$highest_row_limit !== null) { //PPCmetrics
+                return [$matches['col'], min([static::$highest_row_limit, $matches['row']])]; //PPCmetrics
+            } else { //PPCmetrics
+                return [$matches['col'], $matches['row']];
+            } //PPCmetrics
         } elseif (self::coordinateIsRange($cellAddress)) {
             throw new Exception('Cell coordinate string can not be a range of cells');
         } elseif ($cellAddress == '') {
