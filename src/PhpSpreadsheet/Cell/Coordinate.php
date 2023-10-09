@@ -35,7 +35,8 @@ abstract class Coordinate
     {
         if (preg_match(self::A1_COORDINATE_REGEX, $cellAddress, $matches)) {
             if (static::$highest_row_limit !== null) { //PPCmetrics
-                return [$matches['col'], strval(min([static::$highest_row_limit, intval($matches['row'])]))]; //PPCmetrics
+                $is_absolute_row = str_starts_with($matches['row'], '$'); //PPCmetrics
+                return [$matches['col'], ($is_absolute_row ? '$':'').strval(min([static::$highest_row_limit, intval(str_replace('$','', $matches['row']))]))]; //PPCmetrics
             } else { //PPCmetrics
                 return [$matches['col'], $matches['row']];
             } //PPCmetrics
