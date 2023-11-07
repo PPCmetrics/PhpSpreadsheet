@@ -121,7 +121,7 @@ class Chart extends WriterPart
             $this->writeColor($objWriter, $fillColor);
         }
         $borderLines = $chart->getBorderLines();
-        $this->writeLineStyles($objWriter, $borderLines);
+        $this->writeLineStyles($objWriter, $borderLines, $chart->getNoFill());//PPCmetrics
         $this->writeEffects($objWriter, $borderLines);
         $objWriter->endElement(); // c:spPr
 
@@ -130,7 +130,7 @@ class Chart extends WriterPart
             $objWriter->startElement('c:userShapes');
             $objWriter->writeAttribute('r:id', "rId".(++$i));
             $objWriter->endElement();
-        }        
+        }
 
         $this->writePrintSettings($objWriter);
 
