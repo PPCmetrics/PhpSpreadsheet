@@ -125,12 +125,6 @@ class Chart extends WriterPart
         $this->writeEffects($objWriter, $borderLines);
         $objWriter->endElement(); // c:spPr
 
-        $objWriter->startElement('c:spPr');
-        $objWriter->startElement('a:ln');
-        $objWriter->startElement('a:noFill');
-        $objWriter->endElement();
-        $objWriter->endElement();
-        $objWriter->endElement();
         $i=0;
         if ($chart->getUserShapesCount()) {
             $objWriter->startElement('c:userShapes');
