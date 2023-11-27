@@ -695,7 +695,6 @@ class Html
             if ($this->strikethrough) {
                 $font->setStrikethrough(true);
             }
-            $richtextRun->getFont()->setLatin($this->face);
         }
         $this->stringData = '';
     }
