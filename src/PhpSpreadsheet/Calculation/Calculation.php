@@ -5119,7 +5119,7 @@ class Calculation
                     krsort($args);
                     krsort($emptyArguments);
 
-                    if ($argCount > 0) {
+                    if ($argCount > 0 && is_array($functionCall)) {
                         $args = $this->addDefaultArgumentValues($functionCall, $args, $emptyArguments);
                     }
 
@@ -5645,7 +5645,7 @@ class Calculation
 
     private function addDefaultArgumentValues(array $functionCall, array $args, array $emptyArguments): array
     {
-        $reflector = new ReflectionMethod(implode('::', $functionCall));
+        $reflector = new ReflectionMethod($functionCall[0], $functionCall[1]);
         $methodArguments = $reflector->getParameters();
 
         if (count($methodArguments) > 0) {
@@ -5654,8 +5654,8 @@ class Calculation
                 if ($isArgumentEmpty === true) {
                     $reflectedArgumentId = count($args) - (int) $argumentId - 1;
                     if (
-                        !array_key_exists($reflectedArgumentId, $methodArguments) ||
-                        $methodArguments[$reflectedArgumentId]->isVariadic()
+                        !array_key_exists($reflectedArgumentId, $methodArguments)
+                        || $methodArguments[$reflectedArgumentId]->isVariadic()
                     ) {
                         break;
                     }
