@@ -1647,22 +1647,9 @@ class Spreadsheet implements JsonSerializable
         return new Style();
     }
 
-    /**
-     * @throws Exception
-     *
-     * @return mixed
-     */
-    public function __serialize()
-    {
-        throw new Exception('Spreadsheet objects cannot be serialized');
-    }
-
-    /**
-     * @throws Exception
-     */
     public function jsonSerialize(): mixed
     {
-        throw new Exception('Spreadsheet objects cannot be json encoded');
+        return 'Spreadsheet';//PPCmetrics
     }
 
     public function resetThemeFonts(): void
