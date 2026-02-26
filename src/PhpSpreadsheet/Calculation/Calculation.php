@@ -3108,6 +3108,9 @@ class Calculation
      */
     public function renameCalculationCacheForWorksheet($fromWorksheetName, $toWorksheetName): void
     {
+        if ($fromWorksheetName === null) { //PPC
+            return; //PPC
+        } //PPC
         if (isset($this->calculationCache[$fromWorksheetName])) {
             $this->calculationCache[$toWorksheetName] = &$this->calculationCache[$fromWorksheetName];
             unset($this->calculationCache[$fromWorksheetName]);
