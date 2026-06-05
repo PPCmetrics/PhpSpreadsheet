@@ -97,7 +97,7 @@ class BranchPruner
 
     private function initialiseCondition(): void
     {
-        if (isset($this->conditionMap[$this->pendingStoreKey]) && $this->conditionMap[$this->pendingStoreKey]) {
+        if (isset($this->pendingStoreKey, $this->conditionMap[$this->pendingStoreKey]) && $this->conditionMap[$this->pendingStoreKey]) {//PPC
             $this->currentCondition = $this->pendingStoreKey;
             $stackDepth = count($this->storeKeysStack);
             if ($stackDepth > 1) {
@@ -109,7 +109,7 @@ class BranchPruner
 
     private function initialiseThen(): void
     {
-        if (isset($this->thenMap[$this->pendingStoreKey]) && $this->thenMap[$this->pendingStoreKey]) {
+        if (isset($this->pendingStoreKey, $this->thenMap[$this->pendingStoreKey]) && $this->thenMap[$this->pendingStoreKey]) {//PPC
             $this->currentOnlyIf = $this->pendingStoreKey;
         } elseif (
             isset($this->previousStoreKey, $this->thenMap[$this->previousStoreKey])
@@ -121,7 +121,7 @@ class BranchPruner
 
     private function initialiseElse(): void
     {
-        if (isset($this->elseMap[$this->pendingStoreKey]) && $this->elseMap[$this->pendingStoreKey]) {
+        if (isset($this->pendingStoreKey, $this->elseMap[$this->pendingStoreKey]) && $this->elseMap[$this->pendingStoreKey]) {//PPC
             $this->currentOnlyIfNot = $this->pendingStoreKey;
         } elseif (
             isset($this->previousStoreKey, $this->elseMap[$this->previousStoreKey])

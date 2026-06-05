@@ -740,7 +740,7 @@ class Html extends BaseWriter
                     //  width: X sets width of supplied image.
                     //  As a result, images bigger than cell will be contained and images smaller will not get stretched
                     $html .= '<img alt="' . $filedesc . '" src="' . $dataUri . '" style="width:' . $drawing->getWidth() . 'px;left: ' .
-                    $drawing->getOffsetX() . 'px; top: ' . $drawing->getOffsetY() . 'px;position: absolute; z-index: 1;" />';
+                        $drawing->getOffsetX() . 'px; top: ' . $drawing->getOffsetY() . 'px;position: absolute; z-index: 1;" />';
                 }
             }
         }
@@ -1102,13 +1102,13 @@ class Html extends BaseWriter
         if ($css['border-bottom'] == '') {
             unset($css['border-bottom']);
         }
-        if ($css['border-top'] == '') { 
+        if ($css['border-top'] == '') {
             unset($css['border-top']);
         }
-        if ($css['border-left'] == '') { 
+        if ($css['border-left'] == '') {
             unset($css['border-left']);
         }
-        if ($css['border-right'] == '') { 
+        if ($css['border-right'] == '') {
             unset($css['border-right']);
         }
 
@@ -1900,16 +1900,16 @@ class Html extends BaseWriter
             '.navigation {page-break-after: always;}',
             '.scrpgbrk, div + div {page-break-before: always;}',
             '@media screen {',
-  /*PPCmetrics
-            '  .gridlines td {border: 1px solid black;}',*/
+            /*PPCmetrics
+                      '  .gridlines td {border: 1px solid black;}',*/
             '  .gridlines th {border: 1px solid black;}',
             '  body>div {margin-top: 5px;}',
             '  body>div:first-child {margin-top: 0;}',
             '  .scrpgbrk {margin-top: 1px;}',
             '}',
             '@media print {',
-  /*PPCmetrics
-            '  .gridlinesp td {border: 1px solid black;}',*/
+            /*PPCmetrics
+                      '  .gridlinesp td {border: 1px solid black;}',*/
             '  .gridlinesp th {border: 1px solid black;}',
             '  .navigation {display: none;}',
             '}',

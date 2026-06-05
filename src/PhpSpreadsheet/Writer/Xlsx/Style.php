@@ -510,8 +510,8 @@ class Style extends WriterPart
         $this->writeFill($objWriter, $style->getFill());
 
         // alignment
-        $horizontal = Alignment::HORIZONTAL_ALIGNMENT_FOR_XLSX[$style->getAlignment()->getHorizontal()] ?? '';
-        $vertical = Alignment::VERTICAL_ALIGNMENT_FOR_XLSX[$style->getAlignment()->getVertical()] ?? '';
+        $horizontal = $style->getAlignment()->getHorizontal() ? (Alignment::HORIZONTAL_ALIGNMENT_FOR_XLSX[$style->getAlignment()->getHorizontal()] ?? '') : '';//PPC
+        $vertical = $style->getAlignment()->getVertical() ? (Alignment::VERTICAL_ALIGNMENT_FOR_XLSX[$style->getAlignment()->getVertical()] ?? '') : '';//PPC
         $rotation = $style->getAlignment()->getTextRotation();
         if ($horizontal || $vertical || $rotation !== null) {
             $objWriter->startElement('alignment');
