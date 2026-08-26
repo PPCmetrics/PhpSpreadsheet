@@ -630,11 +630,11 @@ class Html extends BaseWriter
         }
 
         $html = '';
-        ++$colMax;
+        StringHelper::stringIncrement($colMax);
         ++$row;
         while ($row <= $rowMax) {
             $html .= '<tr>';
-            for ($col = 'A'; $col != $colMax; ++$col) {
+            for ($col = 'A'; $col != $colMax; StringHelper::stringIncrement($col)) {
                 $htmlx = $this->writeImageInCell($worksheet, $col . $row);
                 $htmlx .= $this->includeCharts ? $this->writeChartInCell($worksheet, $col . $row) : '';
                 if ($htmlx) {

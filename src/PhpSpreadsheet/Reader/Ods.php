@@ -19,6 +19,7 @@ use PhpOffice\PhpSpreadsheet\RichText\RichText;
 use PhpOffice\PhpSpreadsheet\Settings;
 use PhpOffice\PhpSpreadsheet\Shared\Date;
 use PhpOffice\PhpSpreadsheet\Shared\File;
+use PhpOffice\PhpSpreadsheet\Shared\StringHelper;
 use PhpOffice\PhpSpreadsheet\Spreadsheet;
 use PhpOffice\PhpSpreadsheet\Style\NumberFormat;
 use PhpOffice\PhpSpreadsheet\Worksheet\Worksheet;
@@ -426,7 +427,7 @@ class Ods extends BaseReader
                                         }
 
                                         for ($i = 0; $i < $colRepeats; ++$i) {
-                                            ++$columnID;
+                                            StringHelper::stringIncrement($columnID);
                                         }
 
                                         continue;
@@ -589,7 +590,7 @@ class Ods extends BaseReader
                                 if ($type !== null) {
                                     for ($i = 0; $i < $colRepeats; ++$i) {
                                         if ($i > 0) {
-                                            ++$columnID;
+                                            StringHelper::stringIncrement($columnID);
                                         }
 
                                         if ($type !== DataType::TYPE_NULL) {
@@ -638,7 +639,7 @@ class Ods extends BaseReader
                                 // Merged cells
                                 $this->processMergedCells($cellData, $tableNs, $type, $columnID, $rowID, $spreadsheet);
 
-                                ++$columnID;
+                                StringHelper::stringIncrement($columnID);
                             }
                             $rowID += $rowRepeats;
 
