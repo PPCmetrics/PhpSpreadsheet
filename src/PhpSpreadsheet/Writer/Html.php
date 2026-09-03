@@ -763,17 +763,17 @@ class Html extends BaseWriter
             if ($chart instanceof Chart) {
                 $chartCoordinates = $chart->getTopLeftPosition();
                 if ($chartCoordinates['cell'] == $coordinates) {
-                    $chartFileName = File::sysGetTempDir() . '/' . uniqid('', true) . '.png';
+                    $chartFileName = File::sysGetTempDir() . '/' . uniqid('', true) . '.svg';//ppc
                     if (!$chart->render($chartFileName)) {
                         return '';
                     }
 
                     $html .= PHP_EOL;
-                    $imageDetails = getimagesize($chartFileName) ?: ['', '', 'mime' => ''];
                     $filedesc = $chart->getTitle();
                     $filedesc = $filedesc ? $filedesc->getCaptionText() : '';
                     $filedesc = $filedesc ? htmlspecialchars($filedesc, ENT_QUOTES) : 'Embedded chart';
                     $picture = file_get_contents($chartFileName);
+                    $imageDetails = $this->getSvgDetails($picture); //ppc
                     if ($picture !== false) {
                         $base64 = base64_encode($picture);
                         $imageData = 'data:' . $imageDetails['mime'] . ';base64,' . $base64;
@@ -787,6 +787,30 @@ class Html extends BaseWriter
 
         // Return
         return $html;
+    }
+
+    /**
+     * SVG version of get_image_size
+     */
+    private function getSvgDetails(string $svg): array
+    {
+        $width = '';
+        $height = '';
+        if (preg_match('/<svg\b[^>]*>/i', $svg, $svgTagMatch)) {
+            $svgTag = $svgTagMatch[0];
+            if (preg_match('/\swidth="([0-9.]+)"/i', $svgTag, $widthMatch)) {
+                $width = (int) round((float) $widthMatch[1]);
+            }
+            if (preg_match('/\sheight="([0-9.]+)"/i', $svgTag, $heightMatch)) {
+                $height = (int) round((float) $heightMatch[1]);
+            }
+            if (($width === '' || $height === '') && preg_match('/\sviewBox="[\d.\s-]+ ([0-9.]+) ([0-9.]+)"/i', $svgTag, $viewBoxMatch)) {
+                $width = $width === '' ? (int) round((float) $viewBoxMatch[1]) : $width;
+                $height = $height === '' ? (int) round((float) $viewBoxMatch[2]) : $height;
+            }
+        }
+
+        return [$width, $height, 'mime' => 'image/svg+xml'];
     }
 
     /**
