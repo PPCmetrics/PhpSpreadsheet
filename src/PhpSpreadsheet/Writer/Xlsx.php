@@ -20,6 +20,7 @@ use PhpOffice\PhpSpreadsheet\Worksheet\MemoryDrawing;
 use PhpOffice\PhpSpreadsheet\Writer\Exception as WriterException;
 use PhpOffice\PhpSpreadsheet\Writer\Xlsx\Chart;
 use PhpOffice\PhpSpreadsheet\Writer\Xlsx\ChartEx;
+use PhpOffice\PhpSpreadsheet\Writer\Xlsx\ChartSheet; // PPC-LINE: added for chart sheet support
 use PhpOffice\PhpSpreadsheet\Writer\Xlsx\Comments;
 use PhpOffice\PhpSpreadsheet\Writer\Xlsx\ContentTypes;
 use PhpOffice\PhpSpreadsheet\Writer\Xlsx\DocProps;
@@ -130,6 +131,10 @@ class Xlsx extends BaseWriter
 
     private Chart $writerPartChart;
 
+    // PPC-BEGIN: ChartSheet mode
+    private ChartSheet $writerPartChartSheet;
+    // PPC-END
+
     private ChartEx $writerPartChartEx;
 
     private Comments $writerPartComments;
@@ -181,6 +186,9 @@ class Xlsx extends BaseWriter
         $spreadsheet->setUsesCheckboxStyle();
 
         $this->writerPartChart = new Chart($this);
+        // PPC-BEGIN: Chartsheet support
+        $this->writerPartChartSheet = new ChartSheet($this);
+        // PPC-END
         $this->writerPartChartEx = new ChartEx($this);
         $this->writerPartComments = new Comments($this);
         $this->writerPartContentTypes = new ContentTypes($this);
@@ -211,6 +219,13 @@ class Xlsx extends BaseWriter
     {
         return $this->writerPartChart;
     }
+
+    // PPC-BEGIN: Chartsheet support
+    public function getWriterPartChartSheet(): ChartSheet
+    {
+        return $this->writerPartChartSheet;
+    }
+    // PPC-END
 
     public function getWriterPartChartEx(): ChartEx
     {
@@ -450,9 +465,18 @@ class Xlsx extends BaseWriter
         $zipContent['xl/workbook.xml'] = $this->getWriterPartWorkbook()->writeWorkbook($this->spreadSheet, $this->preCalculateFormulas, $this->forceFullCalc);
 
         $chartCount = 0;
+        // PPC-BEGIN: Usershape support
+        $drawingRef1 = $this->spreadSheet->getSheetCount();
+        // PPC-END
         // Add worksheets
         for ($i = 0; $i < $this->spreadSheet->getSheetCount(); ++$i) {
-            $zipContent['xl/worksheets/sheet' . ($i + 1) . '.xml'] = $this->getWriterPartWorksheet()->writeWorksheet($this->spreadSheet->getSheet($i), $this->stringTable, $this->includeCharts);
+            // PPC-BEGIN: Chartsheet support
+            if ($this->includeCharts && $this->spreadSheet->getSheet($i)->getChartSheet()) {
+                $zipContent['xl/chartsheets/sheet' . ($i + 1) . '.xml'] = $this->getWriterPartChartSheet()->writeChartsheet($this->spreadSheet->getSheet($i), $this->stringTable, $this->includeCharts);
+            } else {
+                $zipContent['xl/worksheets/sheet' . ($i + 1) . '.xml'] = $this->getWriterPartWorksheet()->writeWorksheet($this->spreadSheet->getSheet($i), $this->stringTable, $this->includeCharts);
+            }
+            // PPC-END
             if ($this->includeCharts) {
                 $charts = $this->spreadSheet->getSheet($i)->getChartCollection();
                 if (count($charts) > 0) {
@@ -467,6 +491,16 @@ class Xlsx extends BaseWriter
                             $zipContent['xl/charts/style' . $chartCount . '.xml'] = $this->writeChartExStyle();
                             $zipContent['xl/charts/colors' . $chartCount . '.xml'] = $this->writeChartExColorStyle();
                         }
+                        // PPC-BEGIN: Usershape support
+                        if ($chart->getUserShapesCount() > 0) {
+                            // Drawing relationships
+                            $startpoint = $drawingRef1;
+                            $zipContent['xl/charts/_rels/chart' . $chartCount . '.xml.rels'] = $this->getWriterPartRels()->writeUserShapeRelationships($chart, $drawingRef1);
+                            ++$startpoint;
+                            // Drawings
+                            $zipContent['xl/drawings/drawing' . $startpoint . '.xml'] = $this->getWriterPartDrawing()->writeUserShapes($chart->getUserShapes());
+                        }
+                        // PPC-END
                     }
                 }
             }
@@ -477,8 +511,11 @@ class Xlsx extends BaseWriter
         // Add worksheet relationships (drawings, ...)
         for ($i = 0; $i < $this->spreadSheet->getSheetCount(); ++$i) {
             // Add relationships
+            // PPC-BEGIN: Chartsheet support
+            $sheetFolderName = (($this->includeCharts && $this->spreadSheet->getSheet($i)->getChartSheet()) ? 'chart' : 'work') . 'sheets';
+            // PPC-END
             /** @var array<string, string> $zipContent */
-            $zipContent['xl/worksheets/_rels/sheet' . ($i + 1) . '.xml.rels'] = $this->getWriterPartRels()->writeWorksheetRelationships($this->spreadSheet->getSheet($i), ($i + 1), $this->includeCharts, $tableRef1, $zipContent);
+            $zipContent['xl/' . $sheetFolderName . '/_rels/sheet' . ($i + 1) . '.xml.rels'] = $this->getWriterPartRels()->writeWorksheetRelationships($this->spreadSheet->getSheet($i), ($i + 1), $this->includeCharts, $tableRef1, $zipContent); // PPC-LINE: added $sheetFolderName
 
             // Add unparsedLoadedData
             $sheetCodeName = $this->spreadSheet->getSheet($i)->getCodeName();

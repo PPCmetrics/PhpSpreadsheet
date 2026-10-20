@@ -133,12 +133,23 @@ class Rels extends WriterPart
         // Relationships with sheets
         $sheetCount = $spreadsheet->getSheetCount();
         for ($i = 0; $i < $sheetCount; ++$i) {
-            $this->writeRelationship(
-                $objWriter,
-                ($i + 1 + 3),
-                Namespaces::WORKSHEET,
-                'worksheets/sheet' . ($i + 1) . '.xml'
-            );
+        // PPC-BEGIN: Write Chartsheet
+            if ($spreadsheet->getSheet($i)->getChartSheet()) {
+                $this->writeRelationship(
+                    $objWriter,
+                    ($i + 1 + 3),
+                    Namespaces::CHARTSHEET,
+                    'chartsheets/sheet' . ($i + 1) . '.xml'
+                );
+            } else {
+                // PPC-END
+                $this->writeRelationship(
+                    $objWriter,
+                    ($i + 1 + 3),
+                    Namespaces::WORKSHEET,
+                    'worksheets/sheet' . ($i + 1) . '.xml'
+                );
+            } // PPC-LINE: End of else
         }
         // Relationships for vbaProject if needed
         // id : just after the last sheet
@@ -404,6 +415,41 @@ class Rels extends WriterPart
             }
         }
     }
+
+    // PPC-BEGIN: write user shape relationships
+    public function writeUserShapeRelationships(\PhpOffice\PhpSpreadsheet\Chart\Chart $chart, &$drawingRef) {
+        // Create XML writer
+        $objWriter = null;
+        if ($this->getParentWriter()->getUseDiskCaching()) {
+            $objWriter = new XMLWriter(XMLWriter::STORAGE_DISK, $this->getParentWriter()->getDiskCachingDirectory());
+        } else {
+            $objWriter = new XMLWriter(XMLWriter::STORAGE_MEMORY);
+        }
+
+        // XML header
+        $objWriter->startDocument('1.0', 'UTF-8', 'yes');
+
+        // Relationships
+        $objWriter->startElement('Relationships');
+        $objWriter->writeAttribute('xmlns', 'http://schemas.openxmlformats.org/package/2006/relationships');
+
+        // Loop through images and write relationships
+        $i = 1;
+        $userShapeCount = $chart->getUserShapesCount();
+        if ($userShapeCount > 0) {
+            $this->writeRelationship(
+                $objWriter,
+                $i++,
+                'http://schemas.openxmlformats.org/officeDocument/2006/relationships/chartUserShapes',
+                '../drawings/drawing' . ++$drawingRef . '.xml'
+            );
+        }
+
+        $objWriter->endElement();
+
+        return $objWriter->getData();
+    }
+    // PPC-END
 
     /**
      * Write drawing relationships to XML format.

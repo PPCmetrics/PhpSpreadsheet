@@ -25,6 +25,10 @@ abstract class Coordinate
      */
     const DEFAULT_RANGE = 'A1:A1';
 
+    // PPC-BEGIN: highest_row_limit property
+    public static ?int $highest_row_limit = null;
+    // PPC-END
+
     /**
      * Convert string coordinate to [0 => int column index, 1 => int row index].
      *
@@ -36,10 +40,15 @@ abstract class Coordinate
     {
         if (preg_match(self::A1_COORDINATE_REGEX, $cellAddress, $matches)) {
             $row = (int) ltrim($matches['row'], '$');
-            // reluctantly allow row 0 due to regression problems
-            if (/*$row > 0 &&*/ $row <= AddressRange::MAX_ROW) {
-                return [$matches['col'], $matches['row']];
-            }
+            if (static::$highest_row_limit !== null) { // PPC-LINE: modified
+                $is_absolute_row = str_starts_with($matches['row'], '$'); // PPC-LINE: modified
+                return [$matches['col'], ($is_absolute_row ? '$' : '') . strval(min([static::$highest_row_limit, $row]))]; // PPC-LINE: modified
+            } else { // PPC-LINE: modified
+                // reluctantly allow row 0 due to regression problems
+                if (/*$row > 0 &&*/ $row <= AddressRange::MAX_ROW) {
+                    return [$matches['col'], $matches['row']];
+                }
+            } // PPC-LINE: modified
         } elseif (self::coordinateIsRange($cellAddress)) {
             throw new Exception('Cell coordinate string can not be a range of cells');
         } elseif ($cellAddress == '') {

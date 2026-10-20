@@ -102,6 +102,9 @@ class ContentTypes extends WriterPart
         /** @var mixed[][][][] */
         $unparsedLoadedData = $spreadsheet->getUnparsedLoadedData();
         $chart = 1;
+        // PPC-BEGIN: Usershape support
+        $drawing = $sheetCount;
+        // PPC-END
         for ($i = 0; $i < $sheetCount; ++$i) {
             $drawings = $spreadsheet->getSheet($i)->getDrawingCollection();
             $drawingCount = count($drawings);
@@ -119,6 +122,11 @@ class ContentTypes extends WriterPart
                     $chartObject = $spreadsheet->getSheet($i)->getChartCollection()[$c];
 
                     if ($chartObject === null || $chartObject->getChartEx() === null) {
+                        // PPC-BEGIN: Usershapes
+                        foreach ($chartObject?->getUserShapes() as $userShape) {
+                            $this->writeOverrideContentType($objWriter, '/xl/drawings/drawing' . (++$drawing) . '.xml', 'application/vnd.openxmlformats-officedocument.drawingml.chartshapes+xml');
+                        }
+                        // PPC-END
                         $this->writeOverrideContentType(
                             $objWriter,
                             '/xl/charts/chart' . $chart++ . '.xml',

@@ -24,6 +24,7 @@ use PhpOffice\PhpSpreadsheet\Style\Alignment;
 use PhpOffice\PhpSpreadsheet\Style\Border;
 use PhpOffice\PhpSpreadsheet\Style\Borders;
 use PhpOffice\PhpSpreadsheet\Style\Conditional;
+use PhpOffice\PhpSpreadsheet\Style\ConditionalFormatting\ConditionalFormatValueObject; // PPC-LINE: added for conditional formatting support
 use PhpOffice\PhpSpreadsheet\Style\ConditionalFormatting\MergedCellStyle;
 use PhpOffice\PhpSpreadsheet\Style\Fill;
 use PhpOffice\PhpSpreadsheet\Style\Font;
@@ -842,7 +843,7 @@ class Html extends BaseWriter
         $chart = $this->sheetCharts[$coordinates] ?? null;
         if ($chart !== null) {
             $chartCoordinates = $chart->getTopLeftPosition();
-            $chartFileName = File::sysGetTempDir() . '/' . uniqid('', true) . '.png';
+            $chartFileName = File::sysGetTempDir() . '/' . uniqid('', true) . '.svg'; // PPC-LINE: modified
             $renderedWidth = $chart->getRenderedWidth();
             $renderedHeight = $chart->getRenderedHeight();
             if ($renderedWidth === null || $renderedHeight === null) {
@@ -870,10 +871,9 @@ class Html extends BaseWriter
             }
 
             $html .= $this->lineEnding;
-            $imageDetails = getimagesize($chartFileName) ?: ['', '', 'mime' => ''];
-
             $filedesc = $filedesc ? htmlspecialchars($filedesc, ENT_QUOTES) : 'Embedded chart';
             $picture = file_get_contents($chartFileName);
+            $imageDetails = $this->getSvgDetails($picture); // PPC-LINE: modified
             unlink($chartFileName);
             if ($picture !== false) {
                 $base64 = base64_encode($picture);
@@ -886,6 +886,32 @@ class Html extends BaseWriter
         // Return
         return $html;
     }
+    
+    // PPC-BEGIN: getSvgDetails
+    /**
+     * SVG version of get_image_size
+     */
+    private function getSvgDetails(string $svg): array
+    {
+        $width = '';
+        $height = '';
+        if (preg_match('/<svg\b[^>]*>/i', $svg, $svgTagMatch)) {
+            $svgTag = $svgTagMatch[0];
+            if (preg_match('/\swidth="([0-9.]+)"/i', $svgTag, $widthMatch)) {
+                $width = (int) round((float) $widthMatch[1]);
+            }
+            if (preg_match('/\sheight="([0-9.]+)"/i', $svgTag, $heightMatch)) {
+                $height = (int) round((float) $heightMatch[1]);
+            }
+            if (($width === '' || $height === '') && preg_match('/\sviewBox="[\d.\s-]+ ([0-9.]+) ([0-9.]+)"/i', $svgTag, $viewBoxMatch)) {
+                $width = $width === '' ? (int) round((float) $viewBoxMatch[1]) : $width;
+                $height = $height === '' ? (int) round((float) $viewBoxMatch[2]) : $height;
+            }
+        }
+
+        return [$width, $height, 'mime' => 'image/svg+xml'];
+    }
+    // PPC-END
 
     private function adjustRendererPositions(Chart $chart, Worksheet $sheet): void
     {
@@ -1599,11 +1625,11 @@ class Html extends BaseWriter
                 }
             }
             $style = $worksheet->getParent()
-                ?->getCellXfByIndexOrNull(
+                 ?->getCellXfByIndexOrNull(
                     $cell->getXfIndex()
                 );
             $formatCode = $style
-                ?->getNumberFormat()
+                    ?->getNumberFormat()
                 ->getFormatCode();
 
             $cellData = NumberFormat::toFormattedString(
@@ -1624,7 +1650,7 @@ class Html extends BaseWriter
     }
 
     /** @param string|string[] $cssClass */
-    private function generateRowCellData(Worksheet $worksheet, null|Cell|string $cell, array|string &$cssClass): string
+    private function generateRowCellData(Worksheet $worksheet, null|Cell|string $cell, array|string &$cssClass, string $cellType): string // PPC-LINE: added cellType argument
     {
         if ($cell instanceof Cell) {
             $cellData = '';
@@ -1664,10 +1690,17 @@ class Html extends BaseWriter
                 $cssClass .= ' ' . $dataType;
             } elseif (is_array($cssClass)) {
                 $index = $cell->getXfIndex();
-                $styleIndex = 'td.style' . $index . ', th.style' . $index;
-                if (isset($this->cssStyles[$styleIndex])) {
-                    $cssClass = array_merge($cssClass, $this->cssStyles[$styleIndex]);
+                // PPC-BEGIN: apply cell type specific styles
+                if ($cellType == 'th') {
+                    if (isset($this->cssStyles['th.style' . $index . ', th.style' . $index])) {
+                        $cssClass = array_merge($cssClass, $this->cssStyles['th.style' . $index . ', th.style' . $index]);
+                    }
+                } else {
+                    if (isset($this->cssStyles['td.style' . $index . ', th.style' . $index])) {
+                        $cssClass = array_merge($cssClass, $this->cssStyles['td.style' . $index . ', th.style' . $index]);
+                    }
                 }
+                // PPC-END
 
                 // General horizontal alignment: Actual horizontal alignment depends on dataType
                 $sharedStyle = $worksheet->getParentOrThrow()->getCellXfByIndex($cell->getXfIndex());
@@ -1773,21 +1806,21 @@ class Html extends BaseWriter
             if ($this->dataFormula) {
                 if ($this->preCalculateFormulas) {
                     $html .= ' data-formula="'
-                    . htmlspecialchars(
-                        $worksheet->getCell($coordinate)
-                            ->getValueString()
-                    )
-                    . '"';
+                        . htmlspecialchars(
+                            $worksheet->getCell($coordinate)
+                                ->getValueString()
+                        )
+                        . '"';
                 }
             }
         } elseif ($dataType === DataType::TYPE_NUMERIC || $dataType === DataType::TYPE_STRING) {
             if ($this->preserveFormatAndValue && $numberFormat !== NumberFormat::FORMAT_GENERAL) {
                 $html .= ' data-value="'
-                . htmlspecialchars(
-                    $worksheet->getCell($coordinate)
-                        ->getValueString()
-                )
-                . '"';
+                    . htmlspecialchars(
+                        $worksheet->getCell($coordinate)
+                            ->getValueString()
+                    )
+                    . '"';
             }
         }
 
@@ -1864,6 +1897,15 @@ class Html extends BaseWriter
 
         $html = $this->generateRowSpans($html, $rowSpan, $colSpan);
 
+        // PPC-BEGIN: data bar css on cell
+        if ($this->conditionalFormatting) {
+            $dataBarCss = $this->getDataBarCss($worksheet, $coordinate);
+            if ($dataBarCss !== '') {
+                $holdCss = ($holdCss === '' ? '' : rtrim($holdCss, '; ') . '; ') . $dataBarCss;
+            }
+        }
+        // PPC-END
+
         $mergedCellStyle = new MergedCellStyle();
         $mergedStyle = $mergedCellStyle->getMergedStyle(
             $worksheet,
@@ -1902,6 +1944,131 @@ class Html extends BaseWriter
         $html .= '</' . $cellType . '>' . $this->lineEnding;
     }
 
+    // PPC-BEGIN: data bar css builder
+    /**
+     * Build CSS for a conditional data bar applying to the given cell.
+     */
+    private function getDataBarCss(Worksheet $worksheet, string $coordinate): string
+    {
+        $cellValue = $worksheet->getCell($coordinate)->getCalculatedValue();
+        if (!is_numeric($cellValue)) {
+            return '';
+        }
+        [$col, $row] = Coordinate::indexesFromString($coordinate);
+        foreach ($worksheet->getConditionalStylesCollection() as $sqref => $conditions) {
+            foreach (explode(' ', (string) $sqref) as $range) {
+                if ($range === '') {
+                    continue;
+                }
+                [[$c1, $r1], [$c2, $r2]] = Coordinate::rangeBoundaries($range);
+                if ($col < $c1 || $col > $c2 || $row < $r1 || $row > $r2) {
+                    continue;
+                }
+                foreach ($conditions as $conditional) {
+                    $dataBar = $conditional->getDataBar();
+                    if ($conditional->getConditionType() !== Conditional::CONDITION_DATABAR || $dataBar === null) {
+                        continue;
+                    }
+                    $values = [];
+                    for ($c = $c1; $c <= $c2; ++$c) {
+                        for ($r = $r1; $r <= $r2; ++$r) {
+                            $address = Coordinate::stringFromColumnIndex($c) . $r;
+                            if ($worksheet->getCellCollection()->has($address)) {
+                                try {
+                                    $v = $worksheet->getCell($address)->getCalculatedValue();
+                                } catch (CalculationException) {
+                                    continue;
+                                }
+                                if (is_numeric($v) && !is_string($v)) {
+                                    $values[] = $v;
+                                }
+                            }
+                        }
+                    }
+                    if ($values === []) {
+                        return '';
+                    }
+                    $min = $this->dataBarBound($dataBar->getMinimumConditionalFormatValueObject(), $values, min($values));
+                    $max = $this->dataBarBound($dataBar->getMaximumConditionalFormatValueObject(), $values, max($values));
+                    $min = min($min, 0);
+                    $max = max($max, 0);
+                    if ($max <= $min) {
+                        return '';
+                    }
+                    $range = (float) ($max - $min);
+                    $axis = (0 - $min) / $range * 100;
+                    $cellValue = max((float) $min, min((float) $max, (float) $cellValue));
+                    $len = abs($cellValue) / $range * 100;
+                    if ($len < 0.01) {
+                        return '';
+                    }
+                    $toCss = static fn (string $argb): string => '#' . substr(ltrim($argb, '#'), -6);
+                    $ext = $dataBar->getConditionalFormattingRuleExt()?->getDataBarExt();
+                    $positive = $toCss($dataBar->getColor());
+                    $negative = $toCss($ext !== null ? $ext->getNegativeFillColor() : $dataBar->getColor());
+                    $axisRgb = $ext !== null ? ($ext->getAxisColor()['rgb'] ?? null) : null;
+                    $axisColor = is_string($axisRgb) && $axisRgb !== '' ? $toCss($axisRgb) : '#000000';
+                    $blend = static function (string $hex, float $toWhite): string {
+                        $out = '#';
+                        foreach ([1, 3, 5] as $i) {
+                            $c = (int) hexdec(substr($hex, $i, 2));
+                            $out .= sprintf('%02x', (int) round($c + (255 - $c) * $toWhite));
+                        }
+
+                        return $out;
+                    };
+                    $pos = static fn (float $offset, float $size): float => $size >= 100 ? 0.0 : $offset / (100 - $size) * 100;
+                    if ($cellValue >= 0) {
+                        $bar = sprintf('linear-gradient(to right, %s, %s)', $positive, $blend($positive, 0.85));
+                        $barPos = $pos($axis, $len);
+                    } else {
+                        $bar = sprintf('linear-gradient(to right, %s, %s)', $blend($negative, 0.85), $negative);
+                        $barPos = $pos($axis - $len, $len);
+                    }
+                    $axisImg = sprintf('linear-gradient(%s, %s)', $axisColor, $axisColor);
+
+                    return sprintf(
+                        'background-image:%s,%s;background-repeat:no-repeat;background-size:1px 100%%,%.2F%% 100%%;background-position:%.2F%% 0,%.2F%% 0;',
+                        $axisImg,
+                        $bar,
+                        $len,
+                        $axis,
+                        $barPos
+                    );
+                }
+            }
+        }
+
+        return '';
+    }
+    // PPC-END
+
+    // PPC-BEGIN: data bar bound helper
+    /**
+     * @param (float|int)[] $values
+     */
+    private function dataBarBound(?ConditionalFormatValueObject $object, array $values, float|int $default): float|int
+    {
+        if ($object === null) {
+            return $default;
+        }
+        $value = $object->getValue();
+        switch ($object->getType()) {
+            case 'num':
+                return is_numeric($value) ? $value + 0 : $default;
+            case 'percent':
+                if (!is_numeric($value)) {
+                    return $default;
+                }
+                $lo = min($values);
+
+                return $lo + (max($values) - $lo) * ((float) $value / 100);
+            default:
+                return $default;
+        }
+    }
+    // PPC-END
+
     /**
      * Generate row.
      *
@@ -1933,7 +2100,7 @@ class Html extends BaseWriter
             [$cell, $cssClass, $coordinate] = $this->generateRowCellCss($worksheet, $cellAddress, $row, $colNum);
 
             // Cell Data
-            $cellData = $this->generateRowCellData($worksheet, $cell, $cssClass);
+            $cellData = $this->generateRowCellData($worksheet, $cell, $cssClass, $cellType); // PPC-LINE: modified
 
             // Get an array of all styles
             $condStyles = $worksheet->getStyle($coordinate)->getConditionalStyles();
@@ -2272,6 +2439,8 @@ class Html extends BaseWriter
 
         // Loop all sheets
         $sheetId = 0;
+        // PPC-BEGIN: disabled @page styles
+        /*
         foreach ($sheets as $worksheet) {
             $htmlPage .= "@page page$sheetId { ";
             $left = StringHelper::formatNumber($worksheet->getPageMargins()->getLeft()) . 'in; ';
@@ -2293,19 +2462,26 @@ class Html extends BaseWriter
                 $htmlPage .= $this->printAreaStyles($sheetId, $worksheet);
             }
             ++$sheetId;
-        }
+        }*/
+        // PPC-END
         $htmlPage .= implode($this->lineEnding, [
             '.navigation {page-break-after: always;}',
             '.scrpgbrk, div + div {page-break-before: always;}',
             '@media screen {',
-            '  .gridlines td {border: 1px solid black;}',
+            // PPC-BEGIN: disabled td gridline
+            /*
+                      '  .gridlines td {border: 1px solid black;}',*/
+            // PPC-END
             '  .gridlines th {border: 1px solid black;}',
             '  body>div {margin-top: 5px;}',
             '  body>div:first-child {margin-top: 0;}',
             '  .scrpgbrk {margin-top: 1px;}',
             '}',
             '@media print {',
-            '  .gridlinesp td {border: 1px solid black;}',
+            // PPC-BEGIN: disabled td gridline
+            /*
+                      '  .gridlinesp td {border: 1px solid black;}',*/
+            // PPC-END
             '  .gridlinesp th {border: 1px solid black;}',
             '  .navigation {display: none;}',
             '}',

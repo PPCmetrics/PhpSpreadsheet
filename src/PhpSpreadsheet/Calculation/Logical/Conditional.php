@@ -48,6 +48,10 @@ class Conditional
      */
     public static function statementIf(mixed $condition = true, mixed $returnIfTrue = 0, mixed $returnIfFalse = false): mixed
     {
+        if (is_array($condition)) { // PPC-LINE: modified
+            return self::evaluateArrayArguments([self::class, __FUNCTION__], $condition, $returnIfTrue, $returnIfFalse); // PPC-LINE: modified
+        } // PPC-LINE: modified
+
         $condition = ($condition === null) ? true : Functions::flattenSingleValue($condition);
 
         if (ErrorValue::isError($condition, true)) {

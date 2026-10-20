@@ -160,6 +160,7 @@ class Chart
      */
     private ?float $renderedHeight = null;
 
+    private array $userShapes = []; // PPC-LINE: User-defined shapes to be drawn on
     /**
      * Create a new Chart.
      * majorGridlines and minorGridlines are deprecated, moved to Axis.
@@ -641,7 +642,20 @@ class Chart
         return $this->bottomRightYOffset;
     }
 
-    public function refresh(): void
+    // PPC-BEGIN: User-defined shapes
+    public function addUserShape($userShape) {
+        $this->userShapes[] = $userShape;
+        return $this;
+    }
+    public function getUserShapes() {
+        return $this->userShapes;
+    }
+    public function getUserShapesCount() {
+        return count($this->userShapes);
+    }
+    // PPC-END
+
+   public function refresh(): void
     {
         if ($this->worksheet !== null) {
             if ($this->plotArea !== null) {

@@ -65,6 +65,8 @@ class DataSeriesValues extends Properties
      */
     private $fillColor;
 
+    private ?ChartColor $borderColor = null; // PPC-LINE: modified
+
     private bool $scatterLines = true;
 
     private bool $bubble3D = false;
@@ -73,6 +75,51 @@ class DataSeriesValues extends Properties
 
     /** @var TrendLine[] */
     private array $trendLines = [];
+
+    // PPC-BEGIN: Bubble Sizes
+    /**
+     * Bubble Size
+     * 
+     * @var array of mixed
+     */
+    private $dataBubbleSizes = [];
+
+    public function getDataBubbleSizes() {
+        return $this->dataBubbleSizes;
+    }
+
+    public function setDataBubbleSizes($dataBubbleSizes) {
+        $this->dataBubbleSizes = $dataBubbleSizes;
+        return $this;
+    }
+
+    /**
+     * Series Bubble Size Source.
+     *
+     * @var string
+     */
+    private $dataBubbleSource;
+
+    public function getDataBubbleSource() {
+        return $this->dataBubbleSource;
+    }
+
+    public function setDataBubbleSource($dataBubbleSource) {
+        $this->dataBubbleSource = $dataBubbleSource;
+        return $this;
+    }
+
+    private $dataLabels = [];
+    public function getDataLabels() {
+        return $this->dataLabels;
+    }
+
+    public function setDataLabels($dataLabels) {
+        $this->dataLabels = $dataLabels;
+        return $this;
+    }    
+
+    // PPC-END
 
     /**
      * Create a new DataSeriesValues object.
@@ -364,6 +411,19 @@ class DataSeriesValues extends Properties
         return $this;
     }
 
+    // PPC-BEGIN: Border Color
+    public function getBorderColor(): ?ChartColor // PPC-LINE: modified
+    {
+        return $this->borderColor;
+    }
+
+    public function setBorderColor(ChartColor $borderColor) // PPC-LINE: modified
+    {
+        $this->borderColor = $borderColor;
+    }
+
+    // PPC-END
+
     /**
      * Identify if the Data Series is a multi-level or a simple series.
      */
@@ -477,6 +537,46 @@ class DataSeriesValues extends Properties
             }
             $this->pointCount = count($this->dataValues ?? []);
         }
+        // PPC-BEGIN: Bubble Sizes
+        if ($this->dataBubbleSource !== null) {
+            $calcEngine = Calculation::getInstance($worksheet->getParent());
+            $newDataBubbleSizes = Calculation::unwrapResult(
+                $calcEngine->_calculateFormulaValue(
+                    '=' . $this->dataBubbleSource,
+                    null,
+                    $worksheet->getCell('A1')
+                )
+            );
+            if ($flatten) {
+                $this->dataBubbleSizes = Functions::flattenArray($newDataBubbleSizes);
+                foreach ($this->dataBubbleSizes as &$dataValue) {
+                    if (is_string($dataValue) && !empty($dataValue) && $dataValue[0] == '#') {
+                        $dataValue = 0.0;
+                    }
+                }
+                unset($dataValue);
+            } else {
+                [$worksheet, $cellRange] = Worksheet::extractSheetTitle($this->dataBubbleSource, true);
+                $dimensions = Coordinate::rangeDimension(str_replace('$', '', $cellRange));
+                if (($dimensions[0] == 1) || ($dimensions[1] == 1)) {
+                    $this->dataBubbleSizes = Functions::flattenArray($newDataBubbleSizes);
+                } else {
+                    $newArray = array_values(array_shift($newDataBubbleSizes));
+                    foreach ($newArray as $i => $newDataSet) {
+                        $newArray[$i] = [$newDataSet];
+                    }
+
+                    foreach ($newDataBubbleSizes as $newDataSet) {
+                        $i = 0;
+                        foreach ($newDataSet as $newDataVal) {
+                            array_unshift($newArray[$i++], $newDataVal);
+                        }
+                    }
+                    $this->dataBubbleSizes = $newArray;
+                }
+            }
+        }
+        // PPC-END
     }
 
     public function getScatterLines(): bool

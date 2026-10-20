@@ -336,6 +336,10 @@ class Worksheet
      */
     private ?string $codeName = null;
 
+    // PPC-BEGIN: chartSheet property
+    private bool $chartSheet = false;
+    // PPC-END
+
     /**
      * Create a new worksheet.
      */
@@ -402,7 +406,7 @@ class Worksheet
     public function __destruct()
     {
         Calculation::getInstanceOrNull($this->parent)
-            ?->clearCalculationCacheForWorksheet($this->title);
+                ?->clearCalculationCacheForWorksheet($this->title);
 
         $this->disconnectCells();
         unset($this->rowDimensions, $this->columnDimensions, $this->tableCollection, $this->sparklineGroupCollection, $this->drawingCollection, $this->inCellDrawingCollection, $this->chartCollection, $this->autoFilter, $this->pivotTableCollection);
@@ -465,10 +469,18 @@ class Worksheet
      */
     private static function checkSheetTitle(string $sheetTitle): string
     {
+        /*
         // Some of the printable ASCII characters are invalid:  * : / \ ? [ ]
         if (str_replace(self::INVALID_CHARACTERS, '', $sheetTitle) !== $sheetTitle) {
             throw new Exception('Invalid character found in sheet title');
+        }*/
+        // PPC-BEGIN: invalid sheet title characters check
+        foreach(self::INVALID_CHARACTERS as $a) {
+            if (stripos($sheetTitle ?? '', $a) !== false) {
+                throw new Exception('Invalid character found in sheet title('.$sheetTitle.'): '.$a.' at Position: '.stripos($sheetTitle,$a).' .');
+            }
         }
+        // PPC-END
 
         // Enforce maximum characters allowed for sheet title
         if (StringHelper::countCharacters($sheetTitle) > self::SHEET_TITLE_MAXIMUM_LENGTH) {
@@ -656,6 +668,21 @@ class Worksheet
 
         throw new Exception("Sheet does not have a chart named $chartName.");
     }
+
+    // PPC-BEGIN: getChartSheet
+    public function getChartSheet(): bool
+    {
+        return $this->chartSheet;
+    }
+    // PPC-END
+
+    // PPC-BEGIN: setChartSheet
+    public function setChartSheet(bool $chartSheet): static
+    {
+        $this->chartSheet = $chartSheet;
+        return $this;
+    }
+    // PPC-END
 
     /**
      * Refresh column dimensions.

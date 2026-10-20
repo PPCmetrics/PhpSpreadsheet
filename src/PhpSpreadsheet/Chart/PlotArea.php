@@ -38,6 +38,21 @@ class PlotArea
      */
     private array $plotSeries;
 
+    // PPC-BEGIN: HasBorder
+    private bool $hasBorder = false;
+
+    public function getHasBorder(): bool
+    {
+        return $this->hasBorder;
+    }
+
+    public function setHasBorder($hasBorder): self
+    {
+        $this->hasBorder = $hasBorder;
+        return $this;
+    }
+    // PPC-END
+
     private ?DataTable $dataTable = null;
 
     /**

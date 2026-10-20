@@ -48,6 +48,9 @@ class NumberFormat extends Supervisor
     const FORMAT_DATE_TIME_INTERVAL_HMS = '[hh]:mm:ss';
     const FORMAT_DATE_YYYYMMDDSLASH = 'yyyy"/"mm"/"dd;@';
     const FORMAT_DATE_LONG_DATE = 'dddd, mmmm d, yyyy';
+    // PPC-BEGIN: PPC date format
+    const FORMAT_DATE_PPC = "dd.mm.yyyy";
+    // PPC-END
 
     const DATE_TIME_OR_DATETIME_ARRAY = [
         self::FORMAT_DATE_YYYYMMDD,

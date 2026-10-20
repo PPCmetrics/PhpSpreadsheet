@@ -227,7 +227,7 @@ class NumberFormatter extends BaseFormatter
             $m = self::pregReplace($n, '', $format);
 
             // Some non-number strings are quoted, so we'll get rid of the quotes, likewise any positional * symbols
-            $format = self::makeString(str_replace(['"', '*'], '', $format));
+            $format = self::makeString(str_replace('"', '', self::pregReplace('/"[^"]*"(*SKIP)(*FAIL)|[*]+/i', '', $format))); // PPC-LINE: modified
             if (preg_match(self::NUMBER_REGEX, $m, $matches)) {
                 // There are placeholders for digits, so inject digits from the value into the mask
                 $value = self::formatStraightNumericValue($value, $format, $matches, $useThousands);

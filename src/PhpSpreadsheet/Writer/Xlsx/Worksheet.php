@@ -210,7 +210,7 @@ class Worksheet extends WriterPart
     /**
      * Write SheetPr.
      */
-    private function writeSheetPr(XMLWriter $objWriter, PhpspreadsheetWorksheet $worksheet): void
+    protected function writeSheetPr(XMLWriter $objWriter, PhpspreadsheetWorksheet $worksheet): void // PPC-LINE: Made protected
     {
         // sheetPr
         $objWriter->startElement('sheetPr');
@@ -274,7 +274,7 @@ class Worksheet extends WriterPart
     /**
      * Write SheetViews.
      */
-    private function writeSheetViews(XMLWriter $objWriter, PhpspreadsheetWorksheet $worksheet): void
+    protected function writeSheetViews(XMLWriter $objWriter, PhpspreadsheetWorksheet $worksheet): void // PPC-LINE: Made protected
     {
         // sheetViews
         $objWriter->startElement('sheetViews');
@@ -1188,7 +1188,7 @@ class Worksheet extends WriterPart
     /**
      * Write PageMargins.
      */
-    private function writePageMargins(XMLWriter $objWriter, PhpspreadsheetWorksheet $worksheet): void
+    protected function writePageMargins(XMLWriter $objWriter, PhpspreadsheetWorksheet $worksheet): void // PPC-LINE: Made protected
     {
         // pageMargins
         $objWriter->startElement('pageMargins');
@@ -1801,7 +1801,7 @@ class Worksheet extends WriterPart
      *
      * @param bool $includeCharts Flag indicating if we should include drawing details for charts
      */
-    private function writeDrawings(XMLWriter $objWriter, PhpspreadsheetWorksheet $worksheet, bool $includeCharts = false): void
+    protected function writeDrawings(XMLWriter $objWriter, PhpspreadsheetWorksheet $worksheet, bool $includeCharts = false): void // PPC-LINE: Made protected
     {
         /** @var mixed[][][][] */
         $unparsedLoadedData = $worksheet->getParentOrThrow()->getUnparsedLoadedData();

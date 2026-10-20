@@ -34,6 +34,10 @@ class Title
 
     private ?Font $font = null;
 
+    // PPC-BEGIN: orientation property
+    private string $orientation;
+    // PPC-END
+
     /**
      * Create a new Title.
      *
@@ -156,6 +160,25 @@ class Title
 
         return $this;
     }
+
+    // PPC-BEGIN: getOrientation
+    /**
+     * Get orientation.
+     */
+    public function getOrientation(): string {
+        return $this->orientation;
+    }
+    // PPC-END
+
+    // PPC-BEGIN: setOrientation
+    /**
+     * Set orientation.
+     */
+    public function setOrientation(string $orientation): self {
+        $this->orientation = $orientation;
+        return $this;
+    }
+    // PPC-END
 
     /**
      * Implement PHP __clone to create a deep clone, not just a shallow copy.

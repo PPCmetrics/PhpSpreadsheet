@@ -543,8 +543,60 @@ class Style extends WriterPart
         // fill
         $this->writeFill($objWriter, $style->getFill());
 
+        // PPC-BEGIN: alignment
+        // alignment
+        $vertical = Alignment::VERTICAL_ALIGNMENT_FOR_XLSX[$style->getAlignment()->getVertical()] ?? '';
+        $horizontal = Alignment::HORIZONTAL_ALIGNMENT_FOR_XLSX[$style->getAlignment()->getHorizontal()] ?? '';
+        $rotation = $style->getAlignment()->getTextRotation();
+        if ($horizontal || $vertical || $rotation !== null) {
+            $objWriter->startElement('alignment');
+            if ($horizontal !== '') {
+                $objWriter->writeAttribute('horizontal', $horizontal);
+            }
+            if ($vertical !== '') {
+                $objWriter->writeAttribute('vertical', $vertical);
+            }
+            $justifyLastLine = $style->getAlignment()->getJustifyLastLine();
+            if (is_bool($justifyLastLine)) {
+                $objWriter->writeAttribute('justifyLastLine', (string) (int) $justifyLastLine);
+            }
+
+            if ($style->getAlignment()->getTextRotation() >= 0) {
+                $textRotation = $style->getAlignment()->getTextRotation();
+            } else {
+                $textRotation = 90 - $style->getAlignment()->getTextRotation();
+            }
+            $objWriter->writeAttribute('textRotation', (string) $textRotation);
+
+            $objWriter->writeAttribute('wrapText', ($style->getAlignment()->getWrapText() ? 'true' : 'false'));
+            $objWriter->writeAttribute('shrinkToFit', ($style->getAlignment()->getShrinkToFit() ? 'true' : 'false'));
+
+            if ($style->getAlignment()->getIndent() > 0) {
+                $objWriter->writeAttribute('indent', (string) $style->getAlignment()->getIndent());
+            }
+            if ($style->getAlignment()->getReadOrder() > 0) {
+                $objWriter->writeAttribute('readingOrder', (string) $style->getAlignment()->getReadOrder());
+            }
+            $objWriter->endElement();
+        }
+        // PPC-END
+
         // border
         $this->writeBorder($objWriter, $style->getBorders());
+        
+        // PPC-BEGIN: protection
+        // protection
+        if ($style->getProtection()->getLocked() != Protection::PROTECTION_INHERIT || $style->getProtection()->getHidden() != Protection::PROTECTION_INHERIT) {
+            $objWriter->startElement('protection');
+            if ($style->getProtection()->getLocked() != Protection::PROTECTION_INHERIT) {
+                $objWriter->writeAttribute('locked', ($style->getProtection()->getLocked() == Protection::PROTECTION_PROTECTED ? 'true' : 'false'));
+            }
+            if ($style->getProtection()->getHidden() != Protection::PROTECTION_INHERIT) {
+                $objWriter->writeAttribute('hidden', ($style->getProtection()->getHidden() == Protection::PROTECTION_PROTECTED ? 'true' : 'false'));
+            }
+            $objWriter->endElement();
+        }
+        // PPC-END
 
         $objWriter->endElement();
     }

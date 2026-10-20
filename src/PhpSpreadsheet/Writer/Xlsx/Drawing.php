@@ -80,6 +80,13 @@ class Drawing extends WriterPart
         return $objWriter->getData();
     }
 
+    // PPC-BEGIN: Usershape support
+    public function writeUserShapes(array $userShapes): string
+    {
+        return '<c:userShapes xmlns:c="http://schemas.openxmlformats.org/drawingml/2006/chart">' . implode("", $userShapes) . '</c:userShapes>';
+    }
+    // PPC-END
+
     /**
      * Write drawings to XML format.
      */

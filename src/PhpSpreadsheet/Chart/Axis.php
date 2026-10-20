@@ -51,6 +51,42 @@ class Axis extends Properties
 
     private ?Title $dispUnitsTitle = null;
 
+    // PPC-BEGIN: Font Settings
+    private int $fontSize = 0;
+
+    private string $fontFamily = '';
+
+    private bool $fontBold = false;
+
+    public function getFontSize(): int
+    {
+        return $this->fontSize;
+    }
+    public function setFontSize(int $fontSize): self
+    {
+        $this->fontSize = $fontSize;
+        return $this;
+    }
+    public function getFontFamily(): string
+    {
+        return $this->fontFamily;
+    }
+    public function setFontFamily(string $fontFamily): self
+    {
+        $this->fontFamily = $fontFamily;
+        return $this;
+    }
+    public function getFontBold(): bool
+    {
+        return $this->fontBold;
+    }
+    public function setFontBold(bool $fontBold): self
+    {
+        $this->fontBold = $fontBold;
+        return $this;
+    }
+    // PPC-END
+
     /**
      * Axis Options.
      *
