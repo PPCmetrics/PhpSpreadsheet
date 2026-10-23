@@ -467,8 +467,9 @@ class Style extends WriterPart
         // alignment
         if ($applyAlignment === '1') {
             $objWriter->startElement('alignment');
-            $vertical = Alignment::VERTICAL_ALIGNMENT_FOR_XLSX[$style->getAlignment()->getVertical()] ?? '';
-            $horizontal = Alignment::HORIZONTAL_ALIGNMENT_FOR_XLSX[$style->getAlignment()->getHorizontal()] ?? '';
+            $vertical = Alignment::VERTICAL_ALIGNMENT_FOR_XLSX[$style->getAlignment()->getVertical() ?? ''] ?? '';  // PPC-LINE: bugfix for errors
+            $horizontal = Alignment::HORIZONTAL_ALIGNMENT_FOR_XLSX[$style->getAlignment()->getHorizontal() ?? ''] ?? ''; // PPC-LINE: bugfix for errors
+
             if ($horizontal !== '') {
                 $objWriter->writeAttribute('horizontal', $horizontal);
             }
@@ -498,6 +499,7 @@ class Style extends WriterPart
             }
             $objWriter->endElement();
         }
+
 
         // protection
         if ($style->getProtection()->getLocked() != Protection::PROTECTION_INHERIT || $style->getProtection()->getHidden() != Protection::PROTECTION_INHERIT) {
@@ -545,8 +547,8 @@ class Style extends WriterPart
 
         // PPC-BEGIN: alignment
         // alignment
-        $vertical = Alignment::VERTICAL_ALIGNMENT_FOR_XLSX[$style->getAlignment()->getVertical()] ?? '';
-        $horizontal = Alignment::HORIZONTAL_ALIGNMENT_FOR_XLSX[$style->getAlignment()->getHorizontal()] ?? '';
+        $vertical = Alignment::VERTICAL_ALIGNMENT_FOR_XLSX[$style->getAlignment()->getVertical() ?? ''] ?? '';
+        $horizontal = Alignment::HORIZONTAL_ALIGNMENT_FOR_XLSX[$style->getAlignment()->getHorizontal() ?? ''] ?? '';
         $rotation = $style->getAlignment()->getTextRotation();
         if ($horizontal || $vertical || $rotation !== null) {
             $objWriter->startElement('alignment');
